@@ -16,7 +16,7 @@ This is where I keep my solutions, because I don't want to lose them to a faulty
 git makes better backups than dropbox. I don't expect this will be any use to outsiders, but at least there's
 a readme.
 
-Instructions for use:
+### Instructions for use:
 
   `cargo run 137`
   
