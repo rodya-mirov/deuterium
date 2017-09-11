@@ -4,7 +4,7 @@ use num::bigint::{BigUint, BigInt};
 use num::integer::{lcm};
 use num::pow::{pow};
 
-use euler_lib::numerics::{powmod, IsPrime, mod_inv};
+use euler_lib::numerics::{powmod, IsPrime, mod_inv, gcd};
 
 
 
@@ -1310,6 +1310,49 @@ pub fn p137() -> String {
 
 
 
+
+
+pub fn p139() -> String {
+    // Looking for PTs (a, b, c) where c % (a-b) == 0
+    // If (a, b, c) works then so does (ka, kb, kc) and vice-versa
+    //
+    // Perimeter is a+b+c; by Euclid a = m^2-n^2, b = 2mn, c = m^2 + n^2 (skipping k)
+    // so perimeter is 2m^2 + 2mn = 2m(m+n)
+
+    let cap = pow(10, 8);
+
+    let mut count = 0;
+
+    let mut m: i64 = 1; // i64::max is well above the numbers we'll need
+
+    loop {
+        if 2*m*m >= cap {
+            break;
+        }
+
+        let mut n = 1 + (m % 2); // opposite parity
+        while n < m {
+            let peri = 2*m*(m+n);
+            if 2*m*(m+n) >= cap {
+                break;
+            } else if gcd(m, n) == 1 {
+                let a = m*m - n*n;
+                let b = 2*m*n;
+                let c = m*m + n*n;
+
+                if c % (a-b) == 0 {
+                    count += (cap - 1) / peri; // the number of multiples of this triangle that fit
+                }
+            }
+
+            n += 2;
+        }
+
+        m += 1;
+    }
+
+    count.to_string()
+}
 
 pub fn p140() -> String {
     // FACTS ABOUT MODIFIED FIBONACCI GOLDEN NUGGETS
