@@ -65,6 +65,8 @@ fn do_problem(problem_num: i32) {
         119 => problems::p101_150::p119(),
         120 => problems::p101_150::p120(),
 
+        123 => problems::p101_150::p123(),
+
         129 => problems::p101_150::p129(),
         130 => problems::p101_150::p130(),
 

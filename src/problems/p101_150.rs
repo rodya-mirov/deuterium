@@ -744,6 +744,32 @@ pub fn p120() -> String {
 
 
 
+pub fn p123() -> String {
+    // ( (k-1)^n + (k+1)^n ) % k^2  =  2nk  if n is odd, or 0 if n is even
+
+    let mut maybe_p: u64 = 3;
+    let mut n: u64 = 1; // 1 prime has gone by (2)
+
+    let goal = pow(10, 10);
+
+    loop {
+        if maybe_p.is_prime() {
+            n += 1;
+
+            if n % 2 == 1 {
+                let rem = (2 * n * maybe_p) % (maybe_p * maybe_p);
+                if rem > goal {
+                    return n.to_string();
+                }
+            }
+        }
+        // ...
+
+        maybe_p += 2;
+    }
+}
+
+
 
 
 pub fn p129() -> String {
