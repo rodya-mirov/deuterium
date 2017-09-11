@@ -1,0 +1,19 @@
+[package]
+name = "project_euler"
+version = "0.1.0"
+authors = ["Richard Rast <Richard.Rast@trinetx.com>"]
+
+[lib]
+name = "euler_lib"
+path = "src/lib.rs"
+#![feature(step_by)]
+
+[[bin]]
+name = "euler_bin"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+num = "0.1.39"
+time = "0.1.37"
+itertools = "0.6.0"
