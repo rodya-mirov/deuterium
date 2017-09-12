@@ -116,8 +116,102 @@ pub fn p108() -> String {
     }
 }
 
+pub fn p109() -> String {
 
+    #[derive(Copy, Clone)]
+    enum Kind {
+        Single,
+        Double,
+        Triple
+    }
 
+    #[derive(Copy, Clone)]
+    struct NormalShot {
+        kind: Kind,
+        pnts: u64
+    }
+
+    impl NormalShot {
+        fn score(&self) -> u64 {
+            (match self.kind {
+                Kind::Single => 1,
+                Kind::Double => 2,
+                Kind::Triple => 3,
+            }) * self.pnts
+        }
+    }
+
+    #[derive(Copy, Clone)]
+    enum Shot {
+        Normal(NormalShot),
+        SingleBull,
+        DoubleBull,
+        Miss
+    }
+
+    impl Shot {
+        fn score(&self) -> u64 {
+            match self {
+                &Shot::Normal(ref normal) => normal.score(),
+                &Shot::Miss => 0,
+                &Shot::DoubleBull => 50,
+                &Shot::SingleBull => 25,
+            }
+        }
+    }
+
+    #[derive(Copy, Clone)]
+    struct Checkout(Shot, Shot, Shot);
+
+    impl Checkout {
+        fn score(&self) -> u64 {
+            let &Checkout(ref a, ref b, ref c) = self;
+            a.score() + b.score() + c.score()
+        }
+    }
+
+    let shots = {
+        let mut shots = Vec::with_capacity(63);
+        shots.push(Shot::Miss);
+
+        for pnts in 1 .. 21 {
+            for kind in vec![Kind::Single, Kind::Double, Kind::Triple] {
+                shots.push(Shot::Normal(NormalShot { kind, pnts } ));
+            }
+        }
+
+        shots.push(Shot::SingleBull);
+        shots.push(Shot::DoubleBull);
+        shots
+    };
+
+    let doubles = {
+        let mut doubles = Vec::with_capacity(21);
+        for pnts in 1 .. 21 {
+            doubles.push(Shot::Normal(NormalShot { kind: Kind::Double, pnts }));
+        }
+
+        doubles.push(Shot::DoubleBull);
+        doubles
+    };
+
+    let checkouts = {
+        let mut checkouts = Vec::new();
+        for i in 0 .. shots.len() {
+            for j in i .. shots.len() {
+                for &last in doubles.iter() {
+                    checkouts.push(Checkout(shots[i], shots[j], last));
+                }
+            }
+        }
+
+        checkouts
+    };
+
+    checkouts.into_iter()
+        .filter(|&checkout| checkout.score() < 100)
+        .count().to_string()
+}
 
 pub fn p110() -> String {
     use std::cmp::Ordering;
