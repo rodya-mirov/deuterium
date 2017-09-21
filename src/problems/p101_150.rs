@@ -1,4 +1,7 @@
 use std::collections::{HashSet, HashMap, BinaryHeap};
+use std::fs::File;
+use std::io::Read;
+use std::rc::Rc;
 
 use num::bigint::{BigUint, BigInt};
 use num::integer::{lcm};
@@ -54,6 +57,43 @@ pub fn p104() -> String {
 }
 
 
+
+pub fn p107() -> String {
+    let (grid, original_total_weight) = {
+        let mut text = String::new();
+
+        File::open("resources/p107.txt").expect("IO Error?")
+            .read_to_string(&mut text).expect("IO Error?");
+
+        let mut total = 0;
+        let mut rows = Vec::with_capacity(40);
+
+        for line in text.lines() {
+            let mut row = Vec::with_capacity(40);
+
+            for token in line.split(",") {
+                let maybe_weight = match token.parse::<u64>() {
+                    Ok(w) => { total += w; Some(w) },
+                    Err(_) => None,
+                };
+                row.push(maybe_weight);
+            }
+
+            rows.push(row);
+        }
+
+        (rows, total / 2)
+    };
+
+    fn is_connected<T>(edges: &Vec<Vec<Option<T>>>) -> bool {
+        // PRE: edges is square
+
+    }
+
+
+
+    panic!()
+}
 
 pub fn p108() -> String {
     struct PossPrimes {
