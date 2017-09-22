@@ -6,6 +6,7 @@ use num::bigint::{BigUint, BigInt};
 use num::integer::{lcm};
 use num::pow::{pow};
 
+use euler_lib::data::RectVec;
 use euler_lib::numerics::{powmod, IsPrime, mod_inv, gcd};
 
 
@@ -1751,4 +1752,118 @@ pub fn p146() -> String {
     }
 
     total.to_string()
+}
+
+
+
+
+
+pub fn p149() -> String {
+    use std::cmp::max;
+
+    trait MaxSubiter<I: Iterator<Item=i64>> {
+        fn max_subiter(self) -> MaxSubarrayIter<I>;
+    }
+
+    impl <I: Iterator<Item=i64>> MaxSubiter<I> for I {
+        fn max_subiter(self) -> MaxSubarrayIter<I> {
+            MaxSubarrayIter { iter: self, best: None }
+        }
+    }
+
+    struct MaxSubarrayIter<I: Iterator<Item=i64>> {
+        iter: I,
+        best: Option<i64>
+    }
+
+    impl <I: Iterator<Item=i64>> Iterator for MaxSubarrayIter<I> {
+        type Item = i64;
+
+        fn next(&mut self) -> Option<i64> {
+            if let Some(next) = self.iter.next() {
+                if self.best.is_none() {
+                    self.best = Some(next);
+                } else {
+                    self.best = Some(max(self.best.unwrap() + next, next));
+                }
+
+                self.best
+            } else {
+                None
+            }
+        }
+    }
+
+    let grid = {
+        let cap = 4_000_000;
+        let mut lagged: Vec<i64> = Vec::with_capacity(cap);
+
+        for k in 0..55 {
+            let next = ((100003 - (200003 * (k + 1)) + (300007 * pow(k + 1, 3))) % 1000000) - 500000;
+            lagged.push(next);
+        }
+
+        for k in 55..cap {
+            let next = ((lagged[k - 24] + lagged[k - 55] + 1000000) % 1000000) - 500000;
+            lagged.push(next);
+        }
+
+        RectVec::from(lagged, 2000, 2000).unwrap()
+    };
+
+    let mut best = 0;
+
+    // sweep right
+    for y in 0 .. 2_000 {
+        let max_right = (0 .. 2_000)
+            .map(|x| *grid.get(x, y).unwrap())
+            .max_subiter().max().unwrap();
+        best = max_right;
+    }
+
+    // sweep down
+    for x in 0 .. 2_000 {
+        let max_down = (0 .. 2_000)
+            .map(|y| *grid.get(x, y).unwrap())
+            .max_subiter().max().unwrap();
+        best = max(best, max_down);
+    }
+
+    // sweep down-right; can start from left wall or top wall
+    for start_y in 0 .. 2_000 { // left wall
+        let left_dr_max = (start_y .. 2_000) // our end will be when y is too big
+            .map(|y| *grid.get(y - start_y, y).unwrap())
+            .max_subiter().max().unwrap();
+
+        best = max(best, left_dr_max);
+    }
+
+    for start_x in 0 .. 2_000 { // top wall
+        let top_dr_max = (start_x .. 2_000) // end when x is too big
+            .map(|x| *grid.get(x, x - start_x).unwrap())
+            .max_subiter().max().unwrap();
+
+        best = max(best, top_dr_max);
+    }
+
+    // now sweep up-right; can start from left wall or bottom wall
+    use num::iter::range_step_inclusive;
+
+    for start_y in 0 .. 2_000_i64 { // left wall
+        let left_ur_max = range_step_inclusive(start_y, 0, -1) // end when y breaks the top
+            .map(|y| *grid.get((start_y - y) as usize, y as usize).unwrap())
+            .max_subiter().max().unwrap();
+
+        best = max(best, left_ur_max);
+    }
+
+    for start_x in 0 .. 2_000 { // bottom wall
+        let bott_ur_max = (start_x .. 2_000)
+            .map(|x| *grid.get(x, 1_999 - (x - start_x)).unwrap())
+            .max_subiter().max().unwrap();
+
+        best = max(best, bott_ur_max);
+    }
+
+    best.to_string()
 }
