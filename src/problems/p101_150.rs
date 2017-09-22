@@ -1,4 +1,6 @@
 use std::collections::{HashSet, HashMap, BinaryHeap};
+use std::fs::File;
+use std::io::Read;
 
 use num::bigint::{BigUint, BigInt};
 use num::integer::{lcm};
@@ -54,6 +56,94 @@ pub fn p104() -> String {
 }
 
 
+
+pub fn p107() -> String {
+    use std::cmp::{Ord, PartialOrd, Ordering};
+
+    #[derive(Eq, PartialEq)]
+    struct Edge { start: usize, end: usize, weight: u64 }
+
+    impl Ord for Edge {
+        // reversed order, to turn the max heap into a min heap
+        fn cmp(&self, other: &Edge) -> Ordering {
+            other.weight.cmp(&self.weight)
+        }
+    }
+
+    impl PartialOrd for Edge {
+        fn partial_cmp(&self, other: &Edge) -> Option<Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+
+    let (mut edges, original_total_weight) = {
+        let mut text = String::new();
+
+        File::open("resources/p107.txt").expect("IO Error?")
+            .read_to_string(&mut text).expect("IO Error?");
+
+        let mut rows = Vec::with_capacity(40);
+
+        for line in text.lines() {
+            let mut row = Vec::with_capacity(40);
+
+            for token in line.split(",") {
+                let maybe_weight = match token.parse::<u64>() {
+                    Ok(w) => Some(w),
+                    Err(_) => None,
+                };
+                row.push(maybe_weight);
+            }
+
+            rows.push(row);
+        }
+
+        let mut total = 0;
+        let mut edges = BinaryHeap::new();
+        for i in 0 .. 40 {
+            for j in 0 .. i {
+                if let Some(weight) = rows[i][j] {
+                    edges.push(Edge { start: i, end: j, weight });
+                    total += weight;
+                }
+            }
+        }
+
+        (edges, total)
+    };
+
+    // then we repeatedly add the smallest edge available that improves connectivity
+    // note it can be "final" because of interior mutability (ugh)
+    let mut components = (0 .. 40)
+        .map(|i| { let mut set = HashSet::new(); set.insert(i); (i, set) })
+        .collect::<HashMap<usize, HashSet<usize>>>();
+
+    let mut first_member = (0 .. 40).map(|i| (i, i)).collect::<HashMap<usize, usize>>();
+
+    let mut total_weight = 0;
+
+    // edges is a minheap so this is greedy -- always add the smallest edge that improves connectivity
+    while !edges.is_empty() {
+        let edge = edges.pop().unwrap();
+        let i = first_member[&edge.start];
+        let j = first_member[&edge.end];
+
+        if components[&i].contains(&j) {
+            continue;
+        }
+
+        // otherwise it's an improvement!
+        let i_comp = components.remove(&i).unwrap();
+        for &k in i_comp.iter() {
+            first_member.insert(k, j);
+            components.get_mut(&j).unwrap().insert(k);
+        }
+
+        total_weight += edge.weight;
+    }
+
+    (original_total_weight - total_weight).to_string()
+}
 
 pub fn p108() -> String {
     struct PossPrimes {
