@@ -20,7 +20,7 @@ a readme.
 
   `cargo run 137`
   
-will run problem 137 and print out the answer, as well as how long it took. Replace 137 with any number
+will run problem 137 and print out the answer, as well as how long it took (not guaranteed to run in under a minute without `--release`). Replace 137 with any number
 you like. If the problem isn't supported it will give helpful failure output and quit. Not intended to be
 robust to bad input.
 
