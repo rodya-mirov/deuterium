@@ -83,6 +83,8 @@ fn do_problem(problem_num: i32) {
         145 => problems::p101_150::p145(),
         146 => problems::p101_150::p146(),
 
+        149 => problems::p101_150::p149(),
+
         _ => {
             println!("Problem {} is not yet implemented!", problem_num);
             process::exit(1);
