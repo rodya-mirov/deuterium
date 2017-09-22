@@ -3,11 +3,11 @@ use std::fs::File;
 use std::io::Read;
 
 use num::bigint::{BigUint, BigInt};
-use num::integer::{lcm};
+use num::integer::{lcm, gcd};
 use num::pow::{pow};
 
 use euler_lib::data::RectVec;
-use euler_lib::numerics::{powmod, IsPrime, mod_inv, gcd};
+use euler_lib::numerics::{powmod, IsPrime, mod_inv};
 
 
 
@@ -926,6 +926,98 @@ pub fn p120() -> String {
         .sum::<u64>().to_string()
 }
 
+pub fn p121() -> String {
+    use std::ops::{Mul, Add};
+
+    #[derive(Clone)]
+    struct Rational {
+        num: BigInt,
+        den: BigInt
+    }
+
+    impl Rational {
+        fn from(num: u64, den: u64) -> Rational {
+            let g = gcd(num, den);
+            Rational { num: BigInt::from(num / g), den: BigInt::from(den / g) }
+        }
+    }
+
+    impl<'a> Mul<&'a Rational> for &'a Rational {
+        type Output = Rational;
+
+        fn mul(self, other: &Rational) -> Rational {
+            let num = &self.num * &other.num;
+            let den = &self.den * &other.den;
+
+            let g = gcd(num.clone(), den.clone());
+
+            Rational { num: &num / &g, den: &den / &g }
+        }
+    }
+
+    impl<'a> Add<&'a Rational> for &'a Rational {
+        type Output = Rational;
+
+        fn add(self, other: &Rational) -> Rational {
+            let num = &self.num * &other.den + &self.den * &other.num;
+            let den = &self.den * &other.den;
+
+            let g = gcd(num.clone(), den.clone());
+
+            Rational { num: &num / &g, den: &den / &g }
+        }
+    }
+
+    let turns = 15;
+
+    // state[i] is probability of exactly i blues
+    let mut state = vec![Rational::from(1, 1)];
+
+    for turn in 1 .. (turns+1) {
+        let mut next: Vec<Rational> = Vec::with_capacity(turn + 1);
+
+        let num_blues = 1 as u64;
+        let num_reds = turn as u64;
+        let num_discs = num_blues + num_reds;
+
+        let blue_chance = Rational::from(num_blues, num_discs);
+        let red_chance = Rational::from(num_reds, num_discs);
+
+        {
+            // first pull is special; blue impossible
+            let next_red = &state[0] * &red_chance;
+            next.push(next_red);
+        }
+
+        for i in 1..turn {
+            let next_blue = &state[i - 1] * &blue_chance;
+            let next_red = &state[i] * &red_chance;
+
+            next.push(&next_blue + &next_red);
+        }
+
+        {
+            // last pull is special; red impossible
+            let next_blue = &state[turn - 1] * &blue_chance;
+            next.push(next_blue);
+        }
+
+        state = next;
+    }
+
+    let win_prob = {
+        let mut total = Rational::from(0, 1);
+        let min_blues = turns / 2 + 1; // if turns=2k, this gives k+1; if turns=2k+1, this gives k+1
+
+        for num_blues in min_blues..(turns + 1) {
+            total = &total + &state[num_blues];
+        }
+        total
+    };
+
+    let payout = win_prob.den / win_prob.num;
+    payout.to_string()
+}
 
 
 
