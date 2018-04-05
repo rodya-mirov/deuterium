@@ -1071,7 +1071,7 @@ pub fn p038() -> String {
         set.len() == 9 && !set.contains(&0)
     };
 
-    let push_digits = |mut n: u64, mut to_push: &mut Vec<u64>| {
+    let push_digits = |mut n: u64, to_push: &mut Vec<u64>| {
         if n <= 0 {
             panic!("Not defined for zero");
         }

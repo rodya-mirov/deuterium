@@ -1965,21 +1965,6 @@ pub fn p084() -> String {
 
     struct State([f64; 40]);
 
-    // because otherwise I can't clone an array :|
-    trait NewClone {
-        fn clone(&self) -> Self;
-    }
-
-    impl NewClone for [f64; 40] {
-        fn clone(&self) -> Self {
-            let mut out = [0.0; 40];
-            for i in 0 .. 40 {
-                out[i] = self[i];
-            }
-            out
-        }
-    }
-
     impl Deref for State {
         type Target = [f64; 40];
 
