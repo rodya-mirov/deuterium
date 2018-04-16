@@ -49,6 +49,8 @@ fn do_problem(problem_num: i32) {
         n if n <= 50 => problems::p001_050::problem(n),
         n if n <= 100 => problems::p051_100::problem(n),
 
+        102 => problems::p101_150::p102(),
+
         104 => problems::p101_150::p104(),
 
         107 => problems::p101_150::p107(),
@@ -91,8 +93,6 @@ fn do_problem(problem_num: i32) {
         504 => problems::p501_550::p504(),
 
         523 => problems::p501_550::p523(),
-
-        539 => problems::p501_550::p539(),
 
         _ => {
             println!("Problem {} is not yet implemented!", problem_num);

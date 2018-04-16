@@ -63,15 +63,3 @@ pub fn p523() -> String {
 
     exp(n).to_string()
 }
-
-
-
-pub fn p539() -> String {
-    const BIGMOD = 1 << 55; // must be < u64.max_value(), > cap
-    let cap = powmod(10, 3, BIGMOD);
-
-    
-    let mut exp_is_even = false;
-    let mut exp = 1;
-    let mut two_pow = 2;
-}

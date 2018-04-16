@@ -11,6 +11,71 @@ use euler_lib::numerics::{powmod, IsPrime, mod_inv};
 
 
 
+pub fn p102() -> String {
+    // read the file somehow
+    struct Pt {
+        x: i32,
+        y: i32
+    };
+
+    struct Triangle {
+        a: Pt,
+        b: Pt,
+        c: Pt
+    };
+
+    let origin = Pt { x: 0, y: 0 };
+
+    fn same_side(a: &Pt, b: &Pt, c: &Pt, p: &Pt) -> bool {
+        let n_1 = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+        if n_1 == 0 {
+            return true;
+        }
+
+        let n_2 = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+        if n_1 >= 0 { n_2 >= 0 } else { n_2 <= 0 }
+    }
+
+    fn contains(t: &Triangle, p: &Pt) -> bool {
+        same_side(&t.a, &t.b, &t.c, p)
+            && same_side(&t.a, &t.c, &t.b, p)
+            && same_side(&t.b, &t.c, &t.a, p)
+    }
+
+    let mut text = String::new();
+
+    File::open("resources/p102.txt").expect("IO Error?")
+        .read_to_string(&mut text).expect("IO Error?");
+
+    let mut good_triangles: u32 = 0;
+
+    println!("Num lines: {}", text.lines().count());
+
+    for line in text.lines() {
+        let tokens = line.split(",")
+                .flat_map(|x| x.parse::<i32>().into_iter())
+                .collect::<Vec<i32>>();
+
+        if tokens.len() != 6 {
+            panic!();
+        }
+
+        let tri = Triangle {
+            a: Pt { x: tokens[0], y: tokens[1] },
+            b: Pt { x: tokens[2], y: tokens[3] },
+            c: Pt { x: tokens[4], y: tokens[5] }
+        };
+
+        if contains(&tri, &origin) {
+            good_triangles += 1;
+        }
+    }
+
+    good_triangles.to_string()
+}
+
+
+
 pub fn p104() -> String {
     use num::{Float, ToPrimitive};
 
