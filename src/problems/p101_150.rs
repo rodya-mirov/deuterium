@@ -1111,6 +1111,79 @@ pub fn p123() -> String {
     }
 }
 
+pub fn p124() -> String {
+    let cap = 100000;
+
+    let one: BigUint = BigUint::from(1 as u32);
+
+    let mut e = (0..cap+1).map(|_ignored| BigUint::from(1 as u32)).collect::<Vec<BigUint>>();
+
+    for i in 2 .. cap+1 { // TODO: skip evens
+        if &e[i] > &one {
+            continue;
+        }
+
+        let mult = BigUint::from(i);
+
+        // if we got here, we're prime
+        let mut j = i;
+        while j <= cap {
+            e[j] = &e[j] * &mult;
+
+            j += i;
+        }
+    }
+
+    let mut e_sorted = (0 .. cap+1).collect::<Vec<usize>>();
+    e_sorted.sort_by_key(|x| &e[*x]);
+    
+    e_sorted[10000].to_string()
+}
+
+pub fn p125() -> String {
+    let cap: u64 = 100_000_000; // 100_000_000
+
+    let mut sum_sq = HashSet::new();
+
+    let mut start = 1;
+    while 2 * start * start <= cap {
+        
+        let mut end = start+1;
+        let mut total = start * start + end*end;
+
+        while total <= cap {
+            sum_sq.insert(total);
+
+            end += 1;
+            total += end * end;
+        }
+
+        start += 1;
+    }
+
+    fn is_palindrome(x: &u64) -> bool {
+        let digits = x.to_string().chars()
+            .map(|d| d.to_digit(10).unwrap())
+            .collect::<Vec<u32>>();
+
+
+        let num_digits = digits.len();
+
+        for i in 0 .. (num_digits / 2) {
+            if digits[i] != digits[num_digits-i-1] {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    sum_sq.into_iter()
+        .filter(|x| is_palindrome(x))
+        .sum::<u64>()
+        .to_string()
+}
+
 
 
 
