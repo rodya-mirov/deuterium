@@ -1,6 +1,6 @@
 use std::collections::{HashSet};
 
-use euler_lib::numerics::{gcd, powmod};
+use euler_lib::numerics::{gcd};
 
 
 
