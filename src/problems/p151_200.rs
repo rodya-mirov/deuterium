@@ -1,4 +1,5 @@
 use std::collections::{HashMap};
+use euler_lib::numerics::{powmod};
 
 pub fn p173() -> String {
     // tbh i'm a bit disappointed this worked (1.5 ms with --release)
@@ -74,4 +75,21 @@ pub fn p174() -> String {
     }
     
     count.to_string()
+}
+
+
+
+pub fn p188() -> String {
+    let a: u64 = 1777;
+    let mut b: u64 = 1855;
+    let modulus: u64 = 100_000_000; // 10 ** 8
+
+    let mut running = a;
+
+    while b > 1 {
+        running = powmod(a, running, modulus);
+        b -= 1;
+    }
+
+    running.to_string()
 }
