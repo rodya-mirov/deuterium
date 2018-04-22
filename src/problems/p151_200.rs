@@ -1,5 +1,50 @@
 use std::collections::{HashMap};
 use euler_lib::numerics::{powmod};
+use num::bigint::{BigUint};
+use num::{pow, Zero, One};
+
+
+
+pub fn p169() -> String {
+
+    fn num_sum_powers(n: &BigUint, greatest_pow: &BigUint, cache: &mut HashMap<(BigUint, BigUint), BigUint>) -> BigUint {
+
+        let key = (n.clone(), greatest_pow.clone());
+
+        if let Some(val) = cache.get(&key) {
+            return val.clone();
+        }
+
+        let l_shift = greatest_pow << 1;
+        let r_shift = greatest_pow >> 1;
+        let max_bound = &l_shift << 1;
+
+        if n.is_zero() {
+            return BigUint::one();
+        } else if greatest_pow > n {
+            return num_sum_powers(n, &r_shift, cache);
+        } else if n >= &max_bound {
+            return BigUint::zero();
+        }
+
+        let mut val = num_sum_powers(n, &r_shift, cache) + num_sum_powers(&(n - greatest_pow), &r_shift, cache);
+        if n >= &l_shift {
+            val += num_sum_powers(&(n - l_shift), &r_shift, cache);
+        }
+
+        cache.insert(key, val.clone());
+        return val;
+    }
+
+    let n = pow(BigUint::from(10_u32), 25);
+    let two_pow = pow(BigUint::from(2_u32), 100);
+    let mut cache = HashMap::new();
+
+    return num_sum_powers(&n, &two_pow, &mut cache)
+        .to_string();
+}
+
+
 
 pub fn p173() -> String {
     // tbh i'm a bit disappointed this worked (1.5 ms with --release)
