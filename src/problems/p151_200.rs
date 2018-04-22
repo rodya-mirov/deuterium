@@ -5,6 +5,46 @@ use num::{pow, Zero, One};
 
 
 
+pub fn p164() -> String {
+    fn count_sum(digits_remaining: u8, left_two: u8, left_one: u8, cache: &mut HashMap<(u8, u8, u8), BigUint>) -> BigUint {
+        let leading_sum = left_two + left_one;
+
+        if leading_sum > 9 {
+            return BigUint::zero();
+        } else if digits_remaining == 0 {
+            return BigUint::one();
+        }
+
+        let key = (digits_remaining, left_two, left_one);
+        if let Some(val) = cache.get(&key) {
+            return val.clone();
+        }
+
+        let mut total = BigUint::zero();
+
+        for allowed_digit in 0 .. 10 - leading_sum {
+            total += count_sum(digits_remaining - 1, left_one, allowed_digit, cache);
+        }
+
+        cache.insert(key, total.clone());
+        total
+    }
+
+    let mut cache = HashMap::new();
+
+    let full_digits = 20;
+
+    let inclusive = count_sum(full_digits, 0, 0, &mut cache);
+    let less = count_sum(full_digits-1, 0, 0, &mut cache); // eliminates "leading zeroes" from 'inclusive'
+
+    // known: with 3 digits, get 220, 165
+    // known: with 2 digits, get  55,  45
+
+    (inclusive - less).to_string()
+}
+
+
+
 pub fn p169() -> String {
 
     fn num_sum_powers(n: &BigUint, greatest_pow: &BigUint, cache: &mut HashMap<(BigUint, BigUint), BigUint>) -> BigUint {
