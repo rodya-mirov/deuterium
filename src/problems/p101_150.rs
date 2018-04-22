@@ -1,6 +1,7 @@
 use std::collections::{HashSet, HashMap, BinaryHeap};
 use std::fs::File;
 use std::io::Read;
+use std::cmp::{min};
 
 use num::bigint::{BigUint, BigInt};
 use num::integer::{lcm, gcd};
@@ -1981,6 +1982,71 @@ pub fn p146() -> String {
         n += step;
     }
 
+    total.to_string()
+}
+
+pub fn p147() -> String {
+    fn count_straight(xmax: u64, ymax: u64) -> u64 {
+        let mut total = 0;
+
+        // (x, y) can be any point in the grid, but there is no point
+        // in considering things on the right or bottom edge
+        for x in 0 .. xmax {
+            for y in 0 .. ymax {
+                // count the number of straight rects in the grid with
+                // UL corner (x, y)
+                total = total +(xmax - x) * (ymax - y);
+            }
+        }
+
+        total
+    }
+
+    fn count_tilted(xmax: u64, ymax: u64) -> u64 {
+        let mut total = 0;
+
+        let effective_xmax = xmax * 2;
+        let effective_ymax = ymax * 2;
+
+        for x in 0 .. effective_xmax {
+            for y in 1 .. effective_ymax {
+                if x % 2 != y % 2 {
+                    continue;
+                }
+
+                // count the number of tilted rectangles in the grid with
+                // LEFT corner (x, y)
+                let max_up = y;
+                let max_down = effective_ymax - y;
+
+                let max_right = effective_xmax - x;
+
+                // the number of TOTAL moves (up-right and down-right) we're making for this rectangle
+                for right_moves in 2 .. max_right+1 {
+                    for up_right_moves in 1 .. min(right_moves, max_up+1) {
+                        let down_right_moves = right_moves - up_right_moves;
+                        if down_right_moves <= max_down {
+                            total += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        total
+    }
+
+    let xmax_max = 47;
+    let ymax_max = 43;
+
+    let mut total = 0;
+
+    for xmax in 1 .. xmax_max+1 {
+        for ymax in 1 .. ymax_max+1 {
+            total = total + (count_straight(xmax, ymax) + count_tilted(xmax, ymax));
+        }
+    }
+    
     total.to_string()
 }
 
