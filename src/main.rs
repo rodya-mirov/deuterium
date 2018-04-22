@@ -104,6 +104,8 @@ fn do_problem(problem_num: i32) {
 
         188 => problems::p151_200::p188(),
 
+        193 => problems::p151_200::p193(),
+
 
 
         504 => problems::p501_550::p504(),

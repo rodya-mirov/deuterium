@@ -1,8 +1,9 @@
 use std::collections::{HashMap};
 
+use euler_lib::numerics;
 use euler_lib::numerics::{powmod};
 
-use num::bigint::{BigUint};
+use num::bigint::{BigUint, BigInt};
 use num::{pow, Zero, One};
 
 
@@ -258,6 +259,8 @@ pub fn p181() -> String {
     num_perms(state, state, &mut cache).to_string()
 }
 
+
+
 pub fn p188() -> String {
     let a: u64 = 1777;
     let mut b: u64 = 1855;
@@ -271,4 +274,67 @@ pub fn p188() -> String {
     }
 
     running.to_string()
+}
+
+
+
+pub fn p193() -> String {
+    let cap: usize = 1 << 20; //1 << 50;
+    let root_cap: usize = 1 << 11; //1 << 25; // sqrt of cap
+
+    // fact: 2 * 3 * 5 * ... * 19 is the largest primorial whose square is below cap (found by hand)
+    // this is 8 primes
+    let max_length = 9;
+
+    let primes = numerics::all_primes(root_cap);
+
+    // total size of all intersections of sets of the form:
+    //      1) "things from 1 to cap, inclusive", where
+    //      2) the "thing" is divisible by a^2b^2...k^2, where
+    //      3) (a, b, c, ..., k) is an ascending subsequence of asc of length "length"
+    fn sum_intersections(length: usize, asc: &[usize], cap: usize) -> BigInt {
+        fn total_helper(primes: &[usize], stuff_so_far: &mut Vec<usize>, desired_length: usize, next_index: usize, running_sq_product: usize, cap: usize, running_total: &mut BigInt) {
+            if stuff_so_far.len() == desired_length {
+                *running_total = &*running_total + &BigInt::from(cap / running_sq_product);
+                return;
+            } else if next_index >= primes.len() {
+                return;
+            }
+
+            for actual_next_index in next_index .. primes.len() {
+                let next_prime = primes[actual_next_index];
+                let next_running_sq_product = running_sq_product * next_prime * next_prime;
+
+                if next_running_sq_product > cap {
+                    break;
+                }
+
+                // add all the things that involve the next prime
+                stuff_so_far.push(next_prime);
+                total_helper(primes, stuff_so_far, desired_length, actual_next_index+1, next_running_sq_product, cap, running_total);
+                stuff_so_far.pop();
+            }
+        }
+
+        let mut total = BigInt::zero();
+        total_helper(asc, &mut Vec::new(), length, 0, 1, cap, &mut total);
+
+        total
+    }
+
+    let mut num_square_free = BigInt::from(cap); // 1 .. cap
+
+    let mut parity: i64 = 1;
+    for length in 1 .. max_length+1 {
+        parity *= -1;
+        let curr = sum_intersections(length, &primes, cap);
+
+        if parity < 0 {
+            num_square_free = num_square_free - curr;
+        } else {
+            num_square_free = num_square_free + curr;
+        }
+    }
+
+    num_square_free.to_string()
 }
