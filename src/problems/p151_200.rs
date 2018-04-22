@@ -1,5 +1,7 @@
 use std::collections::{HashMap};
+
 use euler_lib::numerics::{powmod};
+
 use num::bigint::{BigUint};
 use num::{pow, Zero, One};
 
@@ -163,6 +165,98 @@ pub fn p174() -> String {
 }
 
 
+
+pub fn p181() -> String {
+    use std;
+
+    #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
+    struct State {
+        num_black: u8,
+        num_white: u8
+    }
+    
+    impl State {
+        pub fn minned_with(&self, other: &State) -> State {
+            // lexicographic ordering; black bigger than white
+            if self.num_black > other.num_black {
+                State {
+                    num_black: other.num_black,
+                    num_white: other.num_white
+                }
+            } else if self.num_white > other.num_white {
+                State {
+                    num_black: self.num_black,
+                    num_white: other.num_white
+                }
+            } else {
+                State {
+                    num_black: self.num_black,
+                    num_white: self.num_white
+                }
+            }
+        }
+
+        pub fn stepped_down(&self) -> State {
+            if self.num_white > 0 {
+                State {
+                    num_black: self.num_black,
+                    num_white: self.num_white - 1
+                }
+            } else if self.num_black > 0 {
+                State {
+                    num_black: self.num_black - 1,
+                    num_white: std::u8::MAX
+                }
+            } else {
+                panic!();
+            }
+        }
+
+        pub fn reduced_by(&self, other: &State) -> State {
+            State {
+                num_black: self.num_black - other.num_black,
+                num_white: self.num_white - other.num_white
+            }
+        }
+
+        pub fn is_zero(&self) -> bool {
+            self.num_black == 0 && self.num_white == 0
+        }
+    }
+
+    type Cache = HashMap<(State, State), BigUint>;
+
+    fn num_perms(state: State, max_step: State, cache: &mut Cache) -> BigUint {
+        let max_step = max_step.minned_with(&state);
+
+        if state.is_zero() {
+            return BigUint::one();
+        } else if max_step.is_zero() {
+            return BigUint::zero();
+        }
+
+        let key = (state, max_step);
+        if let Some(cached) = cache.get(&key) {
+            return cached.clone();
+        }
+
+        let step_down = num_perms(state, max_step.stepped_down(), cache);
+        let reduced = num_perms(state.reduced_by(&max_step), max_step, cache);
+
+        let val = step_down + reduced;
+        cache.insert(key, val.clone());
+
+        val
+    }
+
+    let num_black = 60;
+    let num_white = 40;
+
+    let state = State { num_black, num_white };
+    let mut cache = HashMap::new();
+
+    num_perms(state, state, &mut cache).to_string()
+}
 
 pub fn p188() -> String {
     let a: u64 = 1777;
