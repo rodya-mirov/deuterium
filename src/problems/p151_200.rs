@@ -1,9 +1,10 @@
-use std::collections::{HashMap};
+use std::collections::{HashMap, HashSet};
 
 use euler_lib::numerics::{powmod};
 
 use num::bigint::{BigUint};
 use num::{pow, Zero, One};
+use num::rational::{Ratio};
 
 
 
@@ -43,6 +44,150 @@ pub fn p164() -> String {
     // known: with 2 digits, get  55,  45
 
     (inclusive - less).to_string()
+}
+
+pub fn p165() -> String {
+    use std::fmt;
+    use std::fmt::{Display};
+
+    type Rational = Ratio<i64>;
+
+    #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
+    struct RPoint {
+        x: Rational,
+        y: Rational
+    }
+
+    #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
+    struct LineSegment {
+        x1: Rational,
+        y1: Rational,
+        x2: Rational,
+        y2: Rational
+    }
+
+    impl Display for LineSegment {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "LineSegment: ({}, {}) to ({}, {})", self.x1, self.y1, self.x2, self.y2)
+        }
+    }
+
+    fn between(a: &Rational, b: &Rational, mid: &Rational) -> bool {
+        if a < b {
+            a < mid && mid < b
+        } else if a > b {
+            b < mid && mid < a
+        } else {
+            mid == a
+        }
+    }
+    
+    impl LineSegment {
+        fn contains(&self, p: &RPoint) -> bool {
+            between(&self.x1, &self.x2, &p.x) && between(&self.y1, &self.y2, &p.y)
+        }
+
+        fn slope(&self) -> Rational {
+            (self.y2 - self.y1) / (self.x2 - self.x1)
+        }
+    }
+    
+    fn true_intersection(a: &LineSegment, b: &LineSegment) -> Option<RPoint> {
+        if a.x1 == a.x2 {
+            let x = a.x1;
+            if b.x1 == b.x2 {
+                return None;
+            }
+
+            let mb = b.slope();
+            let y = mb * (x - b.x1) + b.y1;
+            let p = RPoint { x, y };
+
+            if a.contains(&p) && b.contains(&p) {
+                return Some(p);
+            } else {
+                return None;
+            }
+
+        } else if b.x1 == b.x2 {
+            return true_intersection(b, a);
+        }
+
+        let ma = a.slope();
+        let mb = b.slope();
+
+        if ma == mb {
+            return None;
+        }
+
+        let x_numer = b.y1 - a.y1 + (ma * a.x1) - (mb * b.x1);
+        let x_denom = ma - mb;
+
+        let x = x_numer / x_denom;
+        let y = ma * (x - a.x1) + a.y1;
+        let also_y = mb * (x - b.x1) + b.y1;
+
+        if y != also_y {
+            panic!()
+        }
+
+        let p = RPoint { x, y };
+
+        if a.contains(&p) && b.contains(&p) {
+            Some(p)
+        } else {
+            None
+        }
+    }
+
+    struct BBS {
+        s: u64
+    }
+
+    impl BBS {
+        fn next(&mut self) -> u64 {
+            self.s = (self.s * self.s) % 50515093;
+            self.s % 500
+        }
+
+        fn next_rational(&mut self) -> Rational {
+            Rational::from_integer(self.next() as i64)
+        }
+
+        fn next_seg(&mut self) -> LineSegment {
+            LineSegment {
+                x1: self.next_rational(),
+                y1: self.next_rational(),
+                x2: self.next_rational(),
+                y2: self.next_rational(),
+            }
+        }
+    }
+
+    let mut bbs = BBS { s: 290797 };
+
+    let mut lines = Vec::new();
+    let mut found = HashSet::new();
+    let mut count = 0;
+
+    for i in 0 .. 5000 {
+        let next = bbs.next_seg();
+        // println!("Line {}: {:?}", i+1, next);
+
+        for j in 0 .. i {
+            let prev = lines[j];
+            if let Some(p) = true_intersection(&prev, &next) {
+                found.insert(p);
+                count += 1;
+            }
+        }
+
+        lines.push(next);
+    }
+
+    println!("Raw: {}, deduped: {}", count, found.len());
+    
+    found.len().to_string()
 }
 
 
