@@ -417,3 +417,61 @@ pub fn p188() -> String {
 
     running.to_string()
 }
+
+pub fn p191() -> String {
+    #[derive(Copy, Clone, Hash, Eq, PartialEq)]
+    enum Day {
+        O, A, L
+    }
+
+    #[derive(Copy, Clone, Hash, Eq, PartialEq)]
+    struct Status {
+        days_remaining: usize,
+        late_so_far: usize,
+        prev: Day,
+        prev_prev: Day
+    }
+
+    impl Status {
+        fn next(&self, day: Day) -> Status {
+            Status {
+                days_remaining: self.days_remaining - 1,
+                late_so_far: self.late_so_far + (if day == Day::L { 1 } else { 0 }),
+                prev: day,
+                prev_prev: self.prev
+            }
+        }
+    }
+
+    type Cache = HashMap<Status, BigUint>;
+
+    fn num_strings(status: Status, cache: &mut Cache) -> BigUint {
+        if status.days_remaining == 0 {
+            return BigUint::one();
+        }
+
+        if let Some(val) = cache.get(&status) {
+            return val.clone();
+        }
+
+        let mut total = num_strings(status.next(Day::O), cache);
+        if status.late_so_far == 0 {
+            total = total + num_strings(status.next(Day::L), cache);
+        }
+        if status.prev != Day::A || status.prev_prev != Day::A {
+            total = total + num_strings(status.next(Day::A), cache);
+        }
+
+        cache.insert(status, total.clone());
+        total
+    }
+
+    let status = Status {
+        days_remaining: 30,
+        late_so_far: 0,
+        prev: Day::O,
+        prev_prev: Day::O,
+    };
+
+    num_strings(status, &mut Cache::new()).to_string()
+}
