@@ -75,7 +75,64 @@ pub fn p102() -> String {
     good_triangles.to_string()
 }
 
+pub fn p103() -> String {
+    let mut upper_bound: i64 = 350; // optimum is strictly below this; modify as improvements are found
+    let mut set_str = "This didn't work".to_string();
 
+    fn set_distinct(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, a7: i64) -> bool {
+        let flag_sum = |flag: u8| {
+            let mut out = 0;
+            if flag & (1<<0) != 0 { out += a1; }
+            if flag & (1<<1) != 0 { out += a2; }
+            if flag & (1<<2) != 0 { out += a3; }
+            if flag & (1<<3) != 0 { out += a4; }
+            if flag & (1<<4) != 0 { out += a5; }
+            if flag & (1<<5) != 0 { out += a6; }
+            if flag & (1<<6) != 0 { out += a7; }
+            out
+        };
+
+        let mut seen = HashSet::new();
+
+        for flag in 0 .. (1<<7) {
+            if !seen.insert(flag_sum(flag)) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    for a1 in 1 .. upper_bound/7 + 1 {
+        for a2 in a1+1 .. upper_bound/6 + 1 {
+            // a7 < a1+a2
+            for a7 in a2+5 .. min(upper_bound+1, a1+a2) {
+                // a3 <= a7-4
+                for a3 in a2+1 .. min(a7-3, upper_bound/5 + 1) {
+                    // a6 < a1+a2+a3-a7
+                    for a6 in a3+3 .. min(a7, a1+a2+a3-a7) {
+                        // a4 < a6-2
+                        for a4 in a3+1 .. min(a6-1, upper_bound/3 + 1) {
+                            // a5 < a1+a2+a3+a4-a7-a6
+                            for a5 in a4+1 .. min(a6-1, a1+a2+a3+a4-a7-a6) {
+                                let total = a1+a2+a3+a4+a5+a6+a7;
+                                if total >= upper_bound {
+                                    break;
+                                }
+                                if set_distinct(a1, a2, a3, a4, a5, a6, a7) {
+                                    upper_bound = total;
+                                    set_str = format!("{}{}{}{}{}{}{}", a1, a2, a3, a4, a5, a6, a7);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    set_str
+}
 
 pub fn p104() -> String {
     use num::{Float, ToPrimitive};
