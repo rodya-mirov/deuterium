@@ -50,7 +50,7 @@ fn do_problem(problem_num: i32) {
         n if n <= 100 => problems::p051_100::problem(n),
 
         102 => problems::p101_150::p102(),
-
+        103 => problems::p101_150::p103(),
         104 => problems::p101_150::p104(),
 
         107 => problems::p101_150::p107(),
