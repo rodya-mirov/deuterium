@@ -109,6 +109,10 @@ fn do_problem(problem_num: i32) {
 
 
 
+        206 => problems::p201_250::p206(),
+
+
+
         504 => problems::p501_550::p504(),
 
         523 => problems::p501_550::p523(),
