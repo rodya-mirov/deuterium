@@ -1,4 +1,45 @@
+use std::collections::{HashMap};
+
 use num::pow::{pow};
+
+
+
+pub fn p205() -> String {
+    fn get_distr(faces: usize, num_dice: usize) -> (HashMap<usize, usize>, usize) {
+        if num_dice == 0 {
+            let mut out = HashMap::new();
+            out.insert(0, 1);
+            return (out, 1);
+        }
+
+        let (prev_distr, prev_total) = get_distr(faces, num_dice-1);
+        let mut out: HashMap<usize, usize> = HashMap::new();
+
+        for face in 1 .. (faces+1) {
+            for (roll, mult) in &prev_distr {
+                *out.entry(face+roll).or_insert(0) += mult;
+            }
+        }
+
+        (out, prev_total * faces)
+    }
+
+    let (p_dist, p_total) = get_distr(4, 9);
+    let (c_dist, c_total) = get_distr(6, 6);
+
+    let total = p_total * c_total;
+    let mut wins = 0;
+
+    for (p_score, p_mult) in &p_dist {
+        for (c_score, c_mult) in &c_dist {
+            if p_score > c_score {
+                wins += p_mult * c_mult;
+            }
+        }
+    }
+
+    format!("{:.7}", ((wins as f64) / (total as f64)))
+}
 
 pub fn p206() -> String {
     fn works(mut y: u64) -> bool {
