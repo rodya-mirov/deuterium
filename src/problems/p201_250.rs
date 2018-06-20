@@ -2,6 +2,7 @@ use std::collections::{HashMap};
 
 use num::pow::{pow};
 
+use euler_lib::numerics::{powmod};
 
 
 pub fn p205() -> String {
@@ -79,4 +80,31 @@ pub fn p206() -> String {
     }
 
     panic!("Did not find solution");
+}
+
+
+
+pub fn p250() -> String {
+    let mult_mod = pow(10, 16);
+    let cap = 250250;
+    let modulus = 250;
+
+    let mut possibilities = HashMap::new();
+    possibilities.insert(0 as u64, 1 as usize);
+
+    for i in 1 .. cap+1 {
+        let mut new_poss = possibilities.clone();
+        let addl = powmod(i, i, modulus);
+
+        for (key, count) in possibilities.iter() {
+            let new_key = (key+addl) % modulus;
+            let new_count = new_poss.entry(new_key).or_insert(0);
+            *new_count = (*new_count + count) % mult_mod;
+        }
+
+        possibilities = new_poss;
+    }
+
+    // subtract 1 because they want nonempty subsets
+    (possibilities.get(&0).unwrap()-1).to_string()
 }
