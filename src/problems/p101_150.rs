@@ -179,6 +179,64 @@ pub fn p104() -> String {
     }
 }
 
+pub fn p105() -> String {
+    fn check_monotone(v: &Vec<u64>) -> bool {
+        // PRE: v is sorted
+        let n = v.len();
+        // compare sum(first k+1 elts) > sum(last k elts)
+        let k = 
+            if n % 2 == 1 {
+                n / 2
+            } else {
+                n / 2 - 1
+            };
+
+        let leading = (0..k+1).map(|i| v[i]).sum::<u64>();
+        let trailing = ((n-k)..n).map(|i| v[i]).sum::<u64>();
+        leading > trailing
+    }
+
+    // running time is k 2^k where k=len(v); good thing len(v) <= 12
+    fn check_distinct(v: &Vec<u64>) -> bool {
+        let mut seen_totals = HashSet::new();
+
+        for flag in 0 .. (1<<v.len()) {
+            let mut total = 0;
+            for bit in 0 .. v.len() {
+                if flag & (1 << bit) != 0 {
+                    total += v[bit];
+                }
+            }
+            if !seen_totals.insert(total) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    let mut text = String::new();
+    File::open("resources/p105.txt").expect("IO error?")
+        .read_to_string(&mut text).expect("IO error?");
+
+    let mut monotone_count = 0;
+    let mut distinct_count = 0;
+
+    let sets: Vec<Vec<u64>> = text.lines()
+        .map(|line| line.split(",").map(|token| token.parse::<u64>().unwrap()).collect::<Vec<u64>>())
+        .map(|mut v| { v.sort(); v })
+        .filter(|v| check_monotone(v))
+        .map(|v| { monotone_count += 1; v })
+        .filter(|v| check_distinct(v))
+        .map(|v| { distinct_count += 1; v })
+        .collect();
+    
+    println!("Got {} through the monotone filter", monotone_count);
+    println!("Got {} through the distinct filter", distinct_count);
+    
+    sets.into_iter().map(|v| v.into_iter().sum::<u64>()).sum::<u64>().to_string()
+}
+
 
 
 pub fn p107() -> String {
