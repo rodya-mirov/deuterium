@@ -84,6 +84,45 @@ pub fn p206() -> String {
 
 
 
+pub fn p231() -> String {
+    // sum prime factors satisfies f(ab)=f(a)+f(b)
+    // this means we can compute it with a sieve method
+    // this also means we can compute it for factorials without needing to
+    // compute the factorials themselves
+    // f(n choose r) = f(n! / (r! (n-r)!)) = f(n!) - f(r!) - f((n-r)!)
+    // and f(k!) = sum_i=1^k f(k)
+
+    const CAP: usize = 20000000;
+
+    let mut sieve: Vec<usize> = Vec::with_capacity(CAP+1);
+    for _i in 0 .. CAP+1 {
+        sieve.push(0);
+    }
+
+    for p in 2 .. CAP+1 {
+        // then p is prime
+        if sieve[p] == 0 {
+            let mut p_pow = p;
+
+            while p_pow <= CAP {
+                let mut pp_mult = p_pow;
+                while pp_mult <= CAP {
+                    sieve[pp_mult] += p;
+                    pp_mult += p_pow;
+                }
+                
+                p_pow *= p;
+            }
+        }
+    }
+    
+    let fact_sum = |n: usize| (2..n+1).map(|k| sieve[k]).sum::<usize>();
+    let ncr = |n, r| (fact_sum(n) - fact_sum(r) - fact_sum(n-r));
+    ncr(20000000, 15000000).to_string()
+}
+
+
+
 pub fn p250() -> String {
     let mult_mod = pow(10, 16);
     let cap = 250250;
