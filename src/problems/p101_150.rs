@@ -237,7 +237,68 @@ pub fn p105() -> String {
     sets.into_iter().map(|v| v.into_iter().sum::<u64>()).sum::<u64>().to_string()
 }
 
+pub fn p106() -> String {
+    let n = 12;
 
+    fn bits_of(flag: u64) -> Vec<u8> {
+        let mut out = Vec::new();
+
+        let mut bit = 0;
+        while (1 << bit) <= flag {
+            if (1 << bit) & flag != 0 {
+                out.push(bit);
+            }
+            bit += 1;
+        }
+        out
+    }
+
+    // returns true iff the first nonzero bit of flag1 is < the first nonzero bit of flag2
+    // and likewise with the second, etc.
+    // PRE: flag1.count_ones() == flag2.count_ones()
+    fn bit_less(flag1: u64, flag2: u64) -> bool {
+        let bits1 = bits_of(flag1);
+        let bits2 = bits_of(flag2);
+
+        for i in 0 .. bits1.len() {
+            if bits1[i] >= bits2[i] {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn num_distinct_subsets(n: u64) -> u64 {
+        let mut count = 0;
+        for flag1 in 1_u64 .. (1 << n) {
+            for flag2 in 1_u64 .. flag1 {
+                // check for disjointness of the subsets
+                if flag1 & flag2 != 0 {
+                    continue;
+                }
+                // check for same size of the subsets
+                if flag1.count_ones() != flag2.count_ones() {
+                    continue;
+                }
+
+                // ignore empty sets
+                if flag1.count_ones() == 0 {
+                    continue;
+                }
+
+                // make sure they're not strictly in order
+                if bit_less(flag1, flag2) || bit_less(flag2, flag1) {
+                    continue;
+                }
+
+                count += 1;
+            }
+        }
+        count
+    }
+
+    num_distinct_subsets(n).to_string()
+}
 
 pub fn p107() -> String {
     use std::cmp::{Ord, PartialOrd, Ordering};
