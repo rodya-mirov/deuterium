@@ -5,6 +5,31 @@ use num::pow::{pow};
 use euler_lib::numerics::{powmod};
 
 
+pub fn p204() -> String {
+    fn next_hamming(last_hamming: &Vec<u64>, next_prime: u64, cap: u64) -> Vec<u64> {
+        let mut out = Vec::new();
+        for &h in last_hamming {
+            let mut h = h;
+            while h < cap {
+                out.push(h);
+                h *= next_prime;
+            }
+        }
+        out.sort();
+        out
+    }
+
+    let cap = pow(10, 9);
+
+    let mut hamming = vec![1];
+    // list of primes below 100; too lazy to compute via code
+    for p in vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97] {
+        hamming = next_hamming(&hamming, p, cap+1);
+    }
+
+    hamming.len().to_string()
+}
+
 pub fn p205() -> String {
     fn get_distr(faces: usize, num_dice: usize) -> (HashMap<usize, usize>, usize) {
         if num_dice == 0 {
