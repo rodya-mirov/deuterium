@@ -17,3 +17,5 @@ doc = false
 num = "0.1.39"
 time = "0.1.37"
 itertools = "0.6.0"
+im = "10.2.0"
+rayon = "1.0"

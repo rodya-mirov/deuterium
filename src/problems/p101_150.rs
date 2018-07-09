@@ -10,7 +10,7 @@ use num::pow::{pow};
 use euler_lib::data::RectVec;
 use euler_lib::numerics::{powmod, IsPrime, mod_inv};
 
-
+use im::ordset::OrdSet;
 
 pub fn p102() -> String {
     // read the file somehow
@@ -1261,7 +1261,57 @@ pub fn p121() -> String {
     payout.to_string()
 }
 
+pub fn p122() -> String {
+    let k_cap = 200;
 
+    let mut seen = HashSet::new();
+    seen.insert(1); // we can get it with 0 multiplications
+
+    let mut total_cost: u32 = 0;
+
+    let mut to_process = HashSet::new();
+    to_process.insert(OrdSet::singleton(1));
+
+    let mut num_mults = 0;
+
+    // essentially a BFS for hitting everything from 2 to k_cap
+    'main: loop {
+        num_mults += 1;
+        let mut next_to_process = HashSet::new();
+        let mut done = false;
+
+        to_process.into_iter().for_each(|possibility_set| {
+            if done {
+                return;
+            }
+            for a in &possibility_set {
+                for b in &possibility_set {
+                    let total = *a + *b;
+                    if b > a || total > k_cap || possibility_set.contains(&total) {
+                        break;
+                    }
+
+                    if seen.insert(total) {
+                        //println!("m({})={}; found {} of {} so far", total, num_mults, seen.len(), k_cap);
+                        total_cost += num_mults;
+                        if seen.len() >= k_cap {
+                            done = true;
+                        }
+                    }
+
+                    next_to_process.insert(possibility_set.insert(total));
+                }
+            }
+        });
+
+        to_process = next_to_process;
+        if done {
+            break;
+        }
+    }
+
+    total_cost.to_string()
+}
 
 pub fn p123() -> String {
     // ( (k-1)^n + (k+1)^n ) % k^2  =  2nk  if n is odd, or 0 if n is even

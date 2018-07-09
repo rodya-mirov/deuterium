@@ -2,6 +2,8 @@ extern crate time;
 extern crate euler_lib;
 extern crate num;
 extern crate itertools;
+extern crate im;
+extern crate rayon;
 
 use std::env;
 use std::process;
@@ -69,7 +71,7 @@ fn do_problem(problem_num: i32) {
         119 => problems::p101_150::p119(),
         120 => problems::p101_150::p120(),
         121 => problems::p101_150::p121(),
-
+        122 => problems::p101_150::p122(),
         123 => problems::p101_150::p123(),
         124 => problems::p101_150::p124(),
         125 => problems::p101_150::p125(),
