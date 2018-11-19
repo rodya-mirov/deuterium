@@ -905,6 +905,19 @@ impl MulMod for BigUint {
     }
 }
 
+impl MulMod for usize {
+    fn mul_mod(&self, other: &usize, modulus: &usize) -> usize {
+        #[inline]
+        fn to_u64(n: &usize) -> u64 {
+            *n as u64
+        }
+
+        let u64_self = *self as u64;
+        let u64_out = u64_self.mul_mod(&to_u64(other), &to_u64(modulus));
+        return u64_out as usize;
+    }
+}
+
 impl MulMod for u64 {
     fn mul_mod(&self, other: &u64, modulus: &u64) -> u64 {
         let mut x = *self;
