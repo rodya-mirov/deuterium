@@ -1,14 +1,14 @@
-use std::collections::{HashSet, HashMap, BinaryHeap};
+use std::cmp::{min, Ordering};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fs::File;
 use std::io::Read;
-use std::cmp::{min};
 
-use num::bigint::{BigUint, BigInt};
-use num::integer::{lcm, gcd};
-use num::pow::{pow};
+use num::bigint::{BigInt, BigUint};
+use num::integer::{gcd, lcm};
+use num::pow::pow;
 
 use euler_lib::data::RectVec;
-use euler_lib::numerics::{powmod, IsPrime, mod_inv};
+use euler_lib::numerics::{mod_inv, powmod, IsPrime};
 
 use im::ordset::OrdSet;
 
@@ -16,13 +16,13 @@ pub fn p102() -> String {
     // read the file somehow
     struct Pt {
         x: i32,
-        y: i32
+        y: i32,
     };
 
     struct Triangle {
         a: Pt,
         b: Pt,
-        c: Pt
+        c: Pt,
     };
 
     let origin = Pt { x: 0, y: 0 };
@@ -34,7 +34,11 @@ pub fn p102() -> String {
         }
 
         let n_2 = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-        if n_1 >= 0 { n_2 >= 0 } else { n_2 <= 0 }
+        if n_1 >= 0 {
+            n_2 >= 0
+        } else {
+            n_2 <= 0
+        }
     }
 
     fn contains(t: &Triangle, p: &Pt) -> bool {
@@ -45,26 +49,38 @@ pub fn p102() -> String {
 
     let mut text = String::new();
 
-    File::open("resources/p102.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p102.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
 
     let mut good_triangles: u32 = 0;
 
     println!("Num lines: {}", text.lines().count());
 
     for line in text.lines() {
-        let tokens = line.split(",")
-                .flat_map(|x| x.parse::<i32>().into_iter())
-                .collect::<Vec<i32>>();
+        let tokens = line
+            .split(",")
+            .flat_map(|x| x.parse::<i32>().into_iter())
+            .collect::<Vec<i32>>();
 
         if tokens.len() != 6 {
             panic!();
         }
 
         let tri = Triangle {
-            a: Pt { x: tokens[0], y: tokens[1] },
-            b: Pt { x: tokens[2], y: tokens[3] },
-            c: Pt { x: tokens[4], y: tokens[5] }
+            a: Pt {
+                x: tokens[0],
+                y: tokens[1],
+            },
+            b: Pt {
+                x: tokens[2],
+                y: tokens[3],
+            },
+            c: Pt {
+                x: tokens[4],
+                y: tokens[5],
+            },
         };
 
         if contains(&tri, &origin) {
@@ -82,19 +98,33 @@ pub fn p103() -> String {
     fn set_distinct(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, a7: i64) -> bool {
         let flag_sum = |flag: u8| {
             let mut out = 0;
-            if flag & (1<<0) != 0 { out += a1; }
-            if flag & (1<<1) != 0 { out += a2; }
-            if flag & (1<<2) != 0 { out += a3; }
-            if flag & (1<<3) != 0 { out += a4; }
-            if flag & (1<<4) != 0 { out += a5; }
-            if flag & (1<<5) != 0 { out += a6; }
-            if flag & (1<<6) != 0 { out += a7; }
+            if flag & (1 << 0) != 0 {
+                out += a1;
+            }
+            if flag & (1 << 1) != 0 {
+                out += a2;
+            }
+            if flag & (1 << 2) != 0 {
+                out += a3;
+            }
+            if flag & (1 << 3) != 0 {
+                out += a4;
+            }
+            if flag & (1 << 4) != 0 {
+                out += a5;
+            }
+            if flag & (1 << 5) != 0 {
+                out += a6;
+            }
+            if flag & (1 << 6) != 0 {
+                out += a7;
+            }
             out
         };
 
         let mut seen = HashSet::new();
 
-        for flag in 0 .. (1<<7) {
+        for flag in 0..(1 << 7) {
             if !seen.insert(flag_sum(flag)) {
                 return false;
             }
@@ -103,19 +133,19 @@ pub fn p103() -> String {
         true
     }
 
-    for a1 in 1 .. upper_bound/7 + 1 {
-        for a2 in a1+1 .. upper_bound/6 + 1 {
+    for a1 in 1..upper_bound / 7 + 1 {
+        for a2 in a1 + 1..upper_bound / 6 + 1 {
             // a7 < a1+a2
-            for a7 in a2+5 .. min(upper_bound+1, a1+a2) {
+            for a7 in a2 + 5..min(upper_bound + 1, a1 + a2) {
                 // a3 <= a7-4
-                for a3 in a2+1 .. min(a7-3, upper_bound/5 + 1) {
+                for a3 in a2 + 1..min(a7 - 3, upper_bound / 5 + 1) {
                     // a6 < a1+a2+a3-a7
-                    for a6 in a3+3 .. min(a7, a1+a2+a3-a7) {
+                    for a6 in a3 + 3..min(a7, a1 + a2 + a3 - a7) {
                         // a4 < a6-2
-                        for a4 in a3+1 .. min(a6-1, upper_bound/3 + 1) {
+                        for a4 in a3 + 1..min(a6 - 1, upper_bound / 3 + 1) {
                             // a5 < a1+a2+a3+a4-a7-a6
-                            for a5 in a4+1 .. min(a6-1, a1+a2+a3+a4-a7-a6) {
-                                let total = a1+a2+a3+a4+a5+a6+a7;
+                            for a5 in a4 + 1..min(a6 - 1, a1 + a2 + a3 + a4 - a7 - a6) {
+                                let total = a1 + a2 + a3 + a4 + a5 + a6 + a7;
                                 if total >= upper_bound {
                                     break;
                                 }
@@ -184,15 +214,10 @@ pub fn p105() -> String {
         // PRE: v is sorted
         let n = v.len();
         // compare sum(first k+1 elts) > sum(last k elts)
-        let k = 
-            if n % 2 == 1 {
-                n / 2
-            } else {
-                n / 2 - 1
-            };
+        let k = if n % 2 == 1 { n / 2 } else { n / 2 - 1 };
 
-        let leading = (0..k+1).map(|i| v[i]).sum::<u64>();
-        let trailing = ((n-k)..n).map(|i| v[i]).sum::<u64>();
+        let leading = (0..k + 1).map(|i| v[i]).sum::<u64>();
+        let trailing = ((n - k)..n).map(|i| v[i]).sum::<u64>();
         leading > trailing
     }
 
@@ -200,9 +225,9 @@ pub fn p105() -> String {
     fn check_distinct(v: &Vec<u64>) -> bool {
         let mut seen_totals = HashSet::new();
 
-        for flag in 0 .. (1<<v.len()) {
+        for flag in 0..(1 << v.len()) {
             let mut total = 0;
-            for bit in 0 .. v.len() {
+            for bit in 0..v.len() {
                 if flag & (1 << bit) != 0 {
                     total += v[bit];
                 }
@@ -216,25 +241,44 @@ pub fn p105() -> String {
     }
 
     let mut text = String::new();
-    File::open("resources/p105.txt").expect("IO error?")
-        .read_to_string(&mut text).expect("IO error?");
+    File::open("resources/p105.txt")
+        .expect("IO error?")
+        .read_to_string(&mut text)
+        .expect("IO error?");
 
     let mut monotone_count = 0;
     let mut distinct_count = 0;
 
-    let sets: Vec<Vec<u64>> = text.lines()
-        .map(|line| line.split(",").map(|token| token.parse::<u64>().unwrap()).collect::<Vec<u64>>())
-        .map(|mut v| { v.sort(); v })
+    let sets: Vec<Vec<u64>> = text
+        .lines()
+        .map(|line| {
+            line.split(",")
+                .map(|token| token.parse::<u64>().unwrap())
+                .collect::<Vec<u64>>()
+        })
+        .map(|mut v| {
+            v.sort();
+            v
+        })
         .filter(|v| check_monotone(v))
-        .map(|v| { monotone_count += 1; v })
+        .map(|v| {
+            monotone_count += 1;
+            v
+        })
         .filter(|v| check_distinct(v))
-        .map(|v| { distinct_count += 1; v })
+        .map(|v| {
+            distinct_count += 1;
+            v
+        })
         .collect();
-    
+
     println!("Got {} through the monotone filter", monotone_count);
     println!("Got {} through the distinct filter", distinct_count);
-    
-    sets.into_iter().map(|v| v.into_iter().sum::<u64>()).sum::<u64>().to_string()
+
+    sets.into_iter()
+        .map(|v| v.into_iter().sum::<u64>())
+        .sum::<u64>()
+        .to_string()
 }
 
 pub fn p106() -> String {
@@ -260,7 +304,7 @@ pub fn p106() -> String {
         let bits1 = bits_of(flag1);
         let bits2 = bits_of(flag2);
 
-        for i in 0 .. bits1.len() {
+        for i in 0..bits1.len() {
             if bits1[i] >= bits2[i] {
                 return false;
             }
@@ -270,8 +314,8 @@ pub fn p106() -> String {
 
     fn num_distinct_subsets(n: u64) -> u64 {
         let mut count = 0;
-        for flag1 in 1_u64 .. (1 << n) {
-            for flag2 in 1_u64 .. flag1 {
+        for flag1 in 1_u64..(1 << n) {
+            for flag2 in 1_u64..flag1 {
                 // check for disjointness of the subsets
                 if flag1 & flag2 != 0 {
                     continue;
@@ -301,10 +345,12 @@ pub fn p106() -> String {
 }
 
 pub fn p107() -> String {
-    use std::cmp::{Ord, PartialOrd, Ordering};
-
     #[derive(Eq, PartialEq)]
-    struct Edge { start: usize, end: usize, weight: u64 }
+    struct Edge {
+        start: usize,
+        end: usize,
+        weight: u64,
+    }
 
     impl Ord for Edge {
         // reversed order, to turn the max heap into a min heap
@@ -322,8 +368,10 @@ pub fn p107() -> String {
     let (mut edges, original_total_weight) = {
         let mut text = String::new();
 
-        File::open("resources/p107.txt").expect("IO Error?")
-            .read_to_string(&mut text).expect("IO Error?");
+        File::open("resources/p107.txt")
+            .expect("IO Error?")
+            .read_to_string(&mut text)
+            .expect("IO Error?");
 
         let mut rows = Vec::with_capacity(40);
 
@@ -343,10 +391,14 @@ pub fn p107() -> String {
 
         let mut total = 0;
         let mut edges = BinaryHeap::new();
-        for i in 0 .. 40 {
-            for j in 0 .. i {
+        for i in 0..40 {
+            for j in 0..i {
                 if let Some(weight) = rows[i][j] {
-                    edges.push(Edge { start: i, end: j, weight });
+                    edges.push(Edge {
+                        start: i,
+                        end: j,
+                        weight,
+                    });
                     total += weight;
                 }
             }
@@ -357,11 +409,15 @@ pub fn p107() -> String {
 
     // then we repeatedly add the smallest edge available that improves connectivity
     // note it can be "final" because of interior mutability (ugh)
-    let mut components = (0 .. 40)
-        .map(|i| { let mut set = HashSet::new(); set.insert(i); (i, set) })
+    let mut components = (0..40)
+        .map(|i| {
+            let mut set = HashSet::new();
+            set.insert(i);
+            (i, set)
+        })
         .collect::<HashMap<usize, HashSet<usize>>>();
 
-    let mut first_member = (0 .. 40).map(|i| (i, i)).collect::<HashMap<usize, usize>>();
+    let mut first_member = (0..40).map(|i| (i, i)).collect::<HashMap<usize, usize>>();
 
     let mut total_weight = 0;
 
@@ -424,7 +480,7 @@ pub fn p108() -> String {
 
             num_sol *= 2 * ppow + 1;
 
-            if p*p > n {
+            if p * p > n {
                 if n > 1 {
                     // then the rest is prime, so ...
                     num_sol *= 3;
@@ -450,18 +506,17 @@ pub fn p108() -> String {
 }
 
 pub fn p109() -> String {
-
     #[derive(Copy, Clone)]
     enum Kind {
         Single,
         Double,
-        Triple
+        Triple,
     }
 
     #[derive(Copy, Clone)]
     struct NormalShot {
         kind: Kind,
-        pnts: u64
+        pnts: u64,
     }
 
     impl NormalShot {
@@ -479,7 +534,7 @@ pub fn p109() -> String {
         Normal(NormalShot),
         SingleBull,
         DoubleBull,
-        Miss
+        Miss,
     }
 
     impl Shot {
@@ -507,9 +562,9 @@ pub fn p109() -> String {
         let mut shots = Vec::with_capacity(63);
         shots.push(Shot::Miss);
 
-        for pnts in 1 .. 21 {
+        for pnts in 1..21 {
             for kind in vec![Kind::Single, Kind::Double, Kind::Triple] {
-                shots.push(Shot::Normal(NormalShot { kind, pnts } ));
+                shots.push(Shot::Normal(NormalShot { kind, pnts }));
             }
         }
 
@@ -520,8 +575,11 @@ pub fn p109() -> String {
 
     let doubles = {
         let mut doubles = Vec::with_capacity(21);
-        for pnts in 1 .. 21 {
-            doubles.push(Shot::Normal(NormalShot { kind: Kind::Double, pnts }));
+        for pnts in 1..21 {
+            doubles.push(Shot::Normal(NormalShot {
+                kind: Kind::Double,
+                pnts,
+            }));
         }
 
         doubles.push(Shot::DoubleBull);
@@ -530,8 +588,8 @@ pub fn p109() -> String {
 
     let checkouts = {
         let mut checkouts = Vec::new();
-        for i in 0 .. shots.len() {
-            for j in i .. shots.len() {
+        for i in 0..shots.len() {
+            for j in i..shots.len() {
                 for &last in doubles.iter() {
                     checkouts.push(Checkout(shots[i], shots[j], last));
                 }
@@ -541,25 +599,26 @@ pub fn p109() -> String {
         checkouts
     };
 
-    checkouts.into_iter()
+    checkouts
+        .into_iter()
         .filter(|&checkout| checkout.score() < 100)
-        .count().to_string()
+        .count()
+        .to_string()
 }
 
 pub fn p110() -> String {
-    use std::cmp::Ordering;
-    use std::iter::{Chain};
+    use std::iter::Chain;
     use std::vec::IntoIter;
 
     struct UniqueHeap {
         seen: HashSet<Partial>,
-        heap: BinaryHeap<Partial>
+        heap: BinaryHeap<Partial>,
     }
 
     impl UniqueHeap {
         fn push(&mut self, partial: Partial) {
             if self.seen.contains(&partial) {
-               return;
+                return;
             }
 
             self.seen.insert(partial.clone());
@@ -619,8 +678,8 @@ pub fn p110() -> String {
             heap.push(Partial::from(out_powers));
 
             // increment powers (unless this is suboptimal)
-            for i in 1 .. self.powers.len() {
-                if self.powers[i].1 < self.powers[i-1].1 {
+            for i in 1..self.powers.len() {
+                if self.powers[i].1 < self.powers[i - 1].1 {
                     let mut out_powers = self.powers.clone();
                     out_powers[i].1 += 1;
                     heap.push(Partial::from(out_powers));
@@ -632,7 +691,8 @@ pub fn p110() -> String {
             let next_prime = poss_primes()
                 .filter(|&n| n > last)
                 .filter(|&n| n.is_prime())
-                .nth(0).unwrap();
+                .nth(0)
+                .unwrap();
 
             let mut out_powers = self.powers.clone();
             out_powers.push((next_prime, 1));
@@ -640,17 +700,23 @@ pub fn p110() -> String {
         }
 
         fn from(powers: Vec<(u64, u64)>) -> Partial {
-            let num_sol = powers.iter()
-                .map(|&(_, power)| 2*power+1)
-                .fold(1, |acc, power| { acc * power });
+            let num_sol = powers
+                .iter()
+                .map(|&(_, power)| 2 * power + 1)
+                .fold(1, |acc, power| acc * power);
 
             let num_sol = (num_sol + 1) / 2;
 
-            let value = powers.iter()
+            let value = powers
+                .iter()
                 .map(|&(base, power)| pow(BigUint::from(base), power as usize))
-                .fold(BigUint::from(1_u64), |acc, power| { &acc * &power });
+                .fold(BigUint::from(1_u64), |acc, power| &acc * &power);
 
-            Partial { value, num_sol, powers }
+            Partial {
+                value,
+                num_sol,
+                powers,
+            }
         }
     }
 
@@ -682,11 +748,7 @@ pub fn p110() -> String {
     }
 }
 
-
-
-
 pub fn p112() -> String {
-
     fn not_bouncy(mut n: i64) -> bool {
         let mut direction = 0;
         let mut last_digit = n % 10;
@@ -739,30 +801,33 @@ pub fn p113() -> String {
         let mut total = BigInt::from(0);
         let mut cache = HashMap::new();
 
-        for first_digit in 1 .. 10 {
+        for first_digit in 1..10 {
             total = &total + num_inc_helper(num_digits - 1, first_digit, &mut cache);
         }
 
         total
     }
 
-    fn num_inc_helper(num_digits: u32, first_digit: u32, cache: &mut HashMap<(u32, u32), BigInt>) -> &BigInt {
+    fn num_inc_helper(
+        num_digits: u32,
+        first_digit: u32,
+        cache: &mut HashMap<(u32, u32), BigInt>,
+    ) -> &BigInt {
         let key = (num_digits, first_digit);
         if cache.contains_key(&key) {
             cache.get(&key).unwrap()
         } else {
-            let total =
-                if num_digits == 0 {
-                    BigInt::from(1)
-                } else if num_digits == 1 {
-                    BigInt::from(10 - first_digit) // remaining choices; f, f+1, ..., 9
-                } else {
-                    let mut total = BigInt::from(0);
-                    for next_digit in first_digit .. 10 {
-                        total = &total + num_inc_helper(num_digits - 1, next_digit, cache);
-                    }
-                    total
-                };
+            let total = if num_digits == 0 {
+                BigInt::from(1)
+            } else if num_digits == 1 {
+                BigInt::from(10 - first_digit) // remaining choices; f, f+1, ..., 9
+            } else {
+                let mut total = BigInt::from(0);
+                for next_digit in first_digit..10 {
+                    total = &total + num_inc_helper(num_digits - 1, next_digit, cache);
+                }
+                total
+            };
 
             cache.insert(key, total);
             cache.get(&key).unwrap()
@@ -773,30 +838,33 @@ pub fn p113() -> String {
         let mut total = BigInt::from(0);
         let mut cache = HashMap::new();
 
-        for first_digit in 1 .. 10 {
+        for first_digit in 1..10 {
             total = &total + num_dec_helper(num_digits - 1, first_digit, &mut cache);
         }
 
         total
     }
 
-    fn num_dec_helper(num_digits: u32, first_digit: u32, cache: &mut HashMap<(u32, u32), BigInt>) -> &BigInt {
+    fn num_dec_helper(
+        num_digits: u32,
+        first_digit: u32,
+        cache: &mut HashMap<(u32, u32), BigInt>,
+    ) -> &BigInt {
         let key = (num_digits, first_digit);
         if cache.contains_key(&key) {
             cache.get(&key).unwrap()
         } else {
-            let total =
-                if num_digits == 0 {
-                    BigInt::from(1)
-                } else if num_digits == 1 {
-                    BigInt::from(first_digit + 1) // remaining choices; 0, 1, 2, ..., first_digit
-                } else {
-                    let mut total = BigInt::from(0);
-                    for next_digit in 0 .. first_digit+1 {
-                        total = &total + num_dec_helper(num_digits - 1, next_digit, cache);
-                    }
-                    total
-                };
+            let total = if num_digits == 0 {
+                BigInt::from(1)
+            } else if num_digits == 1 {
+                BigInt::from(first_digit + 1) // remaining choices; 0, 1, 2, ..., first_digit
+            } else {
+                let mut total = BigInt::from(0);
+                for next_digit in 0..first_digit + 1 {
+                    total = &total + num_dec_helper(num_digits - 1, next_digit, cache);
+                }
+                total
+            };
 
             cache.insert(key, total);
             cache.get(&key).unwrap()
@@ -808,7 +876,7 @@ pub fn p113() -> String {
     }
 
     let mut total = BigInt::from(0);
-    for num_digits in 1 .. 100 +1 {
+    for num_digits in 1..100 + 1 {
         total = &total + &num_non_bouncy(num_digits);
     }
     total.to_string()
@@ -825,7 +893,7 @@ pub fn p114() -> String {
                 BigInt::from(1)
             } else {
                 let mut count = BigInt::from(1); // all red
-                let mut red_len = m+1;
+                let mut red_len = m + 1;
 
                 // strictly speaking -- we're allocating an entire red (of specified len) then a black
                 while red_len <= n {
@@ -860,7 +928,7 @@ pub fn p115() -> String {
                 BigInt::from(1)
             } else {
                 let mut count = BigInt::from(1); // all red
-                let mut red_len = m+1;
+                let mut red_len = m + 1;
 
                 // strictly speaking -- we're allocating an entire red (of specified len) then a black
                 while red_len <= n {
@@ -903,8 +971,8 @@ pub fn p116() -> String {
             if n < block_len {
                 BigInt::from(1)
             } else {
-                let black = fixed_count(block_len, n-1, cache).clone();
-                &black + fixed_count(block_len, n-block_len, cache)
+                let black = fixed_count(block_len, n - 1, cache).clone();
+                &black + fixed_count(block_len, n - block_len, cache)
             }
         };
 
@@ -922,7 +990,11 @@ pub fn p116() -> String {
 }
 
 pub fn p117() -> String {
-    fn fixed_count<'a>(block_lens: &Vec<usize>, n: usize, cache: &'a mut HashMap<usize, BigInt>) -> &'a BigInt {
+    fn fixed_count<'a>(
+        block_lens: &Vec<usize>,
+        n: usize,
+        cache: &'a mut HashMap<usize, BigInt>,
+    ) -> &'a BigInt {
         if cache.contains_key(&n) {
             return cache.get(&n).unwrap();
         }
@@ -1016,7 +1088,7 @@ pub fn p118() -> String {
     fn vecs(so_far: &mut Vec<u32>, draw_from: &[u32], count: &mut usize) {
         let old_len = digit_count_vec(so_far);
 
-        for i in 0 .. draw_from.len() {
+        for i in 0..draw_from.len() {
             let next = draw_from[i];
             let next_len = digit_count(next);
             let full_len = old_len + digit_count(next);
@@ -1035,7 +1107,7 @@ pub fn p118() -> String {
             if full_len == 9 {
                 *count += 1;
             } else if full_len + next_len <= 9 {
-                vecs(so_far, &draw_from[i+1..], count);
+                vecs(so_far, &draw_from[i + 1..], count);
             }
 
             so_far.pop();
@@ -1047,7 +1119,10 @@ pub fn p118() -> String {
         .take_while(|&n| n < 10_000_000)
         .filter(|&n| zero_free(n))
         .filter(|&p| p.is_prime())
-        .fold(vec![2, 3], |mut acc, p| { acc.push(p); acc });
+        .fold(vec![2, 3], |mut acc, p| {
+            acc.push(p);
+            acc
+        });
 
     let mut count: usize = 0;
 
@@ -1058,10 +1133,11 @@ pub fn p118() -> String {
     for one_digit in vec![2, 3, 5, 7] {
         let rem = (1..10).filter(|&d| d != one_digit).collect::<Vec<u32>>();
 
-        for p_num in 0 .. 40320 { // 0 to 8!
+        for p_num in 0..40320 {
+            // 0 to 8!
             let perm = nth_permutation(&rem, p_num);
 
-            let p = perm.into_iter().fold(0, |acc, &d| acc*10 + d);
+            let p = perm.into_iter().fold(0, |acc, &d| acc * 10 + d);
             if (p as u32).is_prime() {
                 count += 1;
             }
@@ -1074,8 +1150,6 @@ pub fn p118() -> String {
 }
 
 pub fn p119() -> String {
-    use std::cmp::Ordering;
-
     #[derive(Eq, PartialEq, Debug)]
     struct NextPow {
         result: BigUint,
@@ -1085,12 +1159,11 @@ pub fn p119() -> String {
 
     impl Ord for NextPow {
         fn cmp(&self, other: &NextPow) -> Ordering {
-            self.result.cmp(&other.result).reverse()
-                .then_with(|| {
-                    self.base.cmp(&other.base)
-                }).then_with(|| {
-                    self.power.cmp(&other.power)
-                })
+            self.result
+                .cmp(&other.result)
+                .reverse()
+                .then_with(|| self.base.cmp(&other.base))
+                .then_with(|| self.power.cmp(&other.power))
         }
     }
 
@@ -1113,13 +1186,15 @@ pub fn p119() -> String {
             NextPow {
                 result: pow(BigUint::from(base), power),
                 base: base,
-                power: power
+                power: power,
             }
         }
 
         fn is_good(&self) -> bool {
-            let digit_sum = self.result
-                .to_str_radix(10).chars()
+            let digit_sum = self
+                .result
+                .to_str_radix(10)
+                .chars()
                 .map(|c| c.to_digit(10).unwrap() as u64)
                 .sum::<u64>();
 
@@ -1153,34 +1228,35 @@ pub fn p120() -> String {
     // it's not hard to get a concrete formula but this still runs so fast it's offensive
     fn r_max(a: u64) -> u64 {
         let mut best = 2;
-        for n in 0 .. 2*a {
+        for n in 0..2 * a {
             if n % 2 == 0 {
                 continue;
             }
 
-            best = max(best, (2*n*a) % (a*a));
+            best = max(best, (2 * n * a) % (a * a));
         }
         best
     }
 
-    (3 .. 1_001)
-        .map(|a| r_max(a))
-        .sum::<u64>().to_string()
+    (3..1_001).map(|a| r_max(a)).sum::<u64>().to_string()
 }
 
 pub fn p121() -> String {
-    use std::ops::{Mul, Add};
+    use std::ops::{Add, Mul};
 
     #[derive(Clone)]
     struct Rational {
         num: BigInt,
-        den: BigInt
+        den: BigInt,
     }
 
     impl Rational {
         fn from(num: u64, den: u64) -> Rational {
             let g = gcd(num, den);
-            Rational { num: BigInt::from(num / g), den: BigInt::from(den / g) }
+            Rational {
+                num: BigInt::from(num / g),
+                den: BigInt::from(den / g),
+            }
         }
     }
 
@@ -1193,7 +1269,10 @@ pub fn p121() -> String {
 
             let g = gcd(num.clone(), den.clone());
 
-            Rational { num: &num / &g, den: &den / &g }
+            Rational {
+                num: &num / &g,
+                den: &den / &g,
+            }
         }
     }
 
@@ -1206,7 +1285,10 @@ pub fn p121() -> String {
 
             let g = gcd(num.clone(), den.clone());
 
-            Rational { num: &num / &g, den: &den / &g }
+            Rational {
+                num: &num / &g,
+                den: &den / &g,
+            }
         }
     }
 
@@ -1215,7 +1297,7 @@ pub fn p121() -> String {
     // state[i] is probability of exactly i blues
     let mut state = vec![Rational::from(1, 1)];
 
-    for turn in 1 .. (turns+1) {
+    for turn in 1..(turns + 1) {
         let mut next: Vec<Rational> = Vec::with_capacity(turn + 1);
 
         let num_blues = 1 as u64;
@@ -1262,9 +1344,45 @@ pub fn p121() -> String {
 }
 
 pub fn p122() -> String {
-    let k_cap = 200;
+    #[allow(non_upper_case_globals)]
+    const k_cap: usize = 200;
 
-    let mut seen = HashSet::new();
+    struct VecSet {
+        elts: [bool; k_cap + 1],
+        size: usize,
+    }
+
+    impl VecSet {
+        #[inline(always)]
+        fn contains(&self, n: usize) -> bool {
+            n <= k_cap && self.elts[n]
+        }
+
+        #[inline(always)]
+        fn insert(&mut self, n: usize) -> bool {
+            if !self.contains(n) {
+                self.elts[n] = true;
+                self.size += 1;
+                true
+            } else {
+                false
+            }
+        }
+
+        #[inline(always)]
+        fn len(&self) -> usize {
+            self.size
+        }
+
+        fn new() -> VecSet {
+            VecSet {
+                elts: [false; k_cap + 1],
+                size: 0,
+            }
+        }
+    }
+
+    let mut seen = VecSet::new();
     seen.insert(1); // we can get it with 0 multiplications
 
     let mut total_cost: u32 = 0;
@@ -1280,15 +1398,16 @@ pub fn p122() -> String {
         let mut next_to_process = HashSet::new();
         let mut done = false;
 
-        to_process.into_iter().for_each(|possibility_set| {
+        'level: for possibility_set in to_process {
             if done {
-                return;
+                break;
             }
+
             for a in &possibility_set {
                 for b in &possibility_set {
                     let total = *a + *b;
                     if b > a || total > k_cap || possibility_set.contains(&total) {
-                        break;
+                        break 'level;
                     }
 
                     if seen.insert(total) {
@@ -1302,7 +1421,7 @@ pub fn p122() -> String {
                     next_to_process.insert(possibility_set.insert(total));
                 }
             }
-        });
+        }
 
         to_process = next_to_process;
         if done {
@@ -1343,9 +1462,12 @@ pub fn p124() -> String {
 
     let one: BigUint = BigUint::from(1 as u32);
 
-    let mut e = (0..cap+1).map(|_ignored| BigUint::from(1 as u32)).collect::<Vec<BigUint>>();
+    let mut e = (0..cap + 1)
+        .map(|_ignored| BigUint::from(1 as u32))
+        .collect::<Vec<BigUint>>();
 
-    for i in 2 .. cap+1 { // TODO: skip evens
+    for i in 2..cap + 1 {
+        // TODO: skip evens
         if &e[i] > &one {
             continue;
         }
@@ -1361,9 +1483,9 @@ pub fn p124() -> String {
         }
     }
 
-    let mut e_sorted = (0 .. cap+1).collect::<Vec<usize>>();
+    let mut e_sorted = (0..cap + 1).collect::<Vec<usize>>();
     e_sorted.sort_by_key(|x| &e[*x]);
-    
+
     e_sorted[10000].to_string()
 }
 
@@ -1374,9 +1496,8 @@ pub fn p125() -> String {
 
     let mut start = 1;
     while 2 * start * start <= cap {
-        
-        let mut end = start+1;
-        let mut total = start * start + end*end;
+        let mut end = start + 1;
+        let mut total = start * start + end * end;
 
         while total <= cap {
             sum_sq.insert(total);
@@ -1389,15 +1510,16 @@ pub fn p125() -> String {
     }
 
     fn is_palindrome(x: &u64) -> bool {
-        let digits = x.to_string().chars()
+        let digits = x
+            .to_string()
+            .chars()
             .map(|d| d.to_digit(10).unwrap())
             .collect::<Vec<u32>>();
 
-
         let num_digits = digits.len();
 
-        for i in 0 .. (num_digits / 2) {
-            if digits[i] != digits[num_digits-i-1] {
+        for i in 0..(num_digits / 2) {
+            if digits[i] != digits[num_digits - i - 1] {
                 return false;
             }
         }
@@ -1405,14 +1527,12 @@ pub fn p125() -> String {
         true
     }
 
-    sum_sq.into_iter()
+    sum_sq
+        .into_iter()
         .filter(|x| is_palindrome(x))
         .sum::<u64>()
         .to_string()
 }
-
-
-
 
 pub fn p129() -> String {
     struct NextP {
@@ -1440,23 +1560,22 @@ pub fn p129() -> String {
     }
 
     fn raw_ord(e: u64, base: u64, cache: &mut HashMap<(u64, u64), u64>) -> u64 {
-        *cache.entry((e, base))
-            .or_insert_with(|| {
-                let mut n = 1;
-                let mut e_pow = e % base;
+        *cache.entry((e, base)).or_insert_with(|| {
+            let mut n = 1;
+            let mut e_pow = e % base;
 
-                while e_pow > 1 {
-                    n += 1;
-                    e_pow = (e_pow * e) % base;
-                }
+            while e_pow > 1 {
+                n += 1;
+                e_pow = (e_pow * e) % base;
+            }
 
-                // now e_pow is either 1 or 0
-                if e_pow == 0 {
-                    0
-                } else {
-                    n
-                }
-            })
+            // now e_pow is either 1 or 0
+            if e_pow == 0 {
+                0
+            } else {
+                n
+            }
+        })
     }
 
     fn ord(e: u64, mut base: u64, cache: &mut HashMap<(u64, u64), u64>) -> u64 {
@@ -1486,7 +1605,7 @@ pub fn p129() -> String {
                 if base == 1 {
                     break;
                 }
-            } else if p*p > base {
+            } else if p * p > base {
                 // then `base` is a prime, work it in and stop
                 out = lcm(out, raw_ord(e, base, cache));
                 break;
@@ -1502,7 +1621,7 @@ pub fn p129() -> String {
             return 0;
         }
 
-        ord(10, 9*k, cache)
+        ord(10, 9 * k, cache)
     }
 
     let mut cache = HashMap::new();
@@ -1545,23 +1664,22 @@ pub fn p130() -> String {
     }
 
     fn raw_ord(e: u64, base: u64, cache: &mut HashMap<(u64, u64), u64>) -> u64 {
-        *cache.entry((e, base))
-            .or_insert_with(|| {
-                let mut n = 1;
-                let mut e_pow = e % base;
+        *cache.entry((e, base)).or_insert_with(|| {
+            let mut n = 1;
+            let mut e_pow = e % base;
 
-                while e_pow > 1 {
-                    n += 1;
-                    e_pow = (e_pow * e) % base;
-                }
+            while e_pow > 1 {
+                n += 1;
+                e_pow = (e_pow * e) % base;
+            }
 
-                // now e_pow is either 1 or 0
-                if e_pow == 0 {
-                    0
-                } else {
-                    n
-                }
-            })
+            // now e_pow is either 1 or 0
+            if e_pow == 0 {
+                0
+            } else {
+                n
+            }
+        })
     }
 
     fn ord(e: u64, mut base: u64, cache: &mut HashMap<(u64, u64), u64>) -> u64 {
@@ -1591,7 +1709,7 @@ pub fn p130() -> String {
                 if base == 1 {
                     break;
                 }
-            } else if p*p > base {
+            } else if p * p > base {
                 // then `base` is a prime, work it in and stop
                 out = lcm(out, raw_ord(e, base, cache));
                 break;
@@ -1607,7 +1725,7 @@ pub fn p130() -> String {
             return 0;
         }
 
-        ord(10, 9*k, cache)
+        ord(10, 9 * k, cache)
     }
 
     fn is_prime(maybe: u64, seen: &Vec<u64>) -> bool {
@@ -1618,7 +1736,7 @@ pub fn p130() -> String {
         for &p in seen {
             if maybe % p == 0 {
                 return false;
-            } else if p*p > maybe {
+            } else if p * p > maybe {
                 return true;
             }
         }
@@ -1640,7 +1758,7 @@ pub fn p130() -> String {
             if is_prime(n, &primes) {
                 primes.push(n);
             } else {
-                if (n-1) % a(n, &mut cache) == 0 {
+                if (n - 1) % a(n, &mut cache) == 0 {
                     solution_total += n;
                     num_solutions += 1;
 
@@ -1657,13 +1775,10 @@ pub fn p130() -> String {
     solution_total.to_string()
 }
 
-
-
-
 pub fn p132() -> String {
     struct PossPrimes {
         next: u64,
-        step: u64
+        step: u64,
     }
 
     impl Iterator for PossPrimes {
@@ -1688,7 +1803,7 @@ pub fn p132() -> String {
         // R(r_base) = (10^{r_base} - 1) / (9)
         // so equiv: 9 * divisor | 10^{r_base} - 1
         // equiv: powmod(10, r_base, 9*divisor) == 1
-        powmod(10, r_base, 9*divisor) == 1
+        powmod(10, r_base, 9 * divisor) == 1
     }
 
     let r_base = pow(10, 10);
@@ -1711,7 +1826,7 @@ pub fn p132() -> String {
     }
 
     for p in poss_primes() {
-        if check_is_prime(p, &primes_seen) && is_div(r_base, p)  {
+        if check_is_prime(p, &primes_seen) && is_div(r_base, p) {
             primes_seen.push(p);
 
             if primes_seen.len() >= 40 {
@@ -1720,8 +1835,7 @@ pub fn p132() -> String {
         }
     }
 
-    primes_seen.into_iter()
-        .sum::<u64>().to_string()
+    primes_seen.into_iter().sum::<u64>().to_string()
 }
 
 pub fn p133() -> String {
@@ -1744,7 +1858,7 @@ pub fn p133() -> String {
 
     struct PossPrimes {
         next: u64,
-        step: u64
+        step: u64,
     }
 
     impl Iterator for PossPrimes {
@@ -1765,7 +1879,7 @@ pub fn p133() -> String {
         for p in primes {
             if maybe % p == 0 {
                 return false;
-            } else if p*p > maybe {
+            } else if p * p > maybe {
                 return true;
             }
         }
@@ -1792,7 +1906,7 @@ pub fn p133() -> String {
 pub fn p134() -> String {
     struct PossPrime {
         next: u64,
-        step: u64
+        step: u64,
     }
 
     impl PossPrime {
@@ -1817,14 +1931,19 @@ pub fn p134() -> String {
         last: Option<T::Item>,
     }
 
-    impl <T: Iterator> Pairs<T> {
+    impl<T: Iterator> Pairs<T> {
         fn from(it: T) -> Pairs<T> {
-            Pairs { iter: it, last: None }
+            Pairs {
+                iter: it,
+                last: None,
+            }
         }
     }
 
-    impl <T> Iterator for Pairs<T>
-        where T: Iterator, T::Item: Copy
+    impl<T> Iterator for Pairs<T>
+    where
+        T: Iterator,
+        T::Item: Copy,
     {
         type Item = (T::Item, T::Item);
 
@@ -1862,7 +1981,7 @@ pub fn p134() -> String {
         // iff      k == -p1 * (inc^{-1})  (mod p2)
         // where inc^{-1} is computed mod p2
 
-        let k = ((p2-p1) * mod_inv(inc, p2)) % p2;
+        let k = ((p2 - p1) * mod_inv(inc, p2)) % p2;
         let n = k * inc + p1;
 
         n
@@ -1873,13 +1992,11 @@ pub fn p134() -> String {
     Pairs::from(primes)
         .take_while(|&(p1, _)| p1 <= 1_000_000)
         .map(|(p1, p2)| find_s(p1, p2))
-        .fold(BigUint::from(0_u64), |acc, next| &acc + &BigUint::from(next))
+        .fold(BigUint::from(0_u64), |acc, next| {
+            &acc + &BigUint::from(next)
+        })
         .to_string()
 }
-
-
-
-
 
 pub fn p137() -> String {
     // FACTS ABOUT FIBONACCI GOLDEN NUGGETS
@@ -1919,14 +2036,14 @@ pub fn p137() -> String {
     #[derive(Clone, Debug)]
     struct Pell {
         u: BigInt,
-        v: BigInt
+        v: BigInt,
     }
 
     impl Pell {
         fn start() -> Pell {
             Pell {
                 u: BigInt::from(3),
-                v: BigInt::from(1)
+                v: BigInt::from(1),
             }
         }
 
@@ -1946,12 +2063,14 @@ pub fn p137() -> String {
     }
 
     struct PellIter {
-        next: Pell
+        next: Pell,
     }
 
     impl PellIter {
         fn start() -> PellIter {
-            PellIter { next: Pell::start() }
+            PellIter {
+                next: Pell::start(),
+            }
         }
     }
 
@@ -1976,10 +2095,6 @@ pub fn p137() -> String {
     a.to_string()
 }
 
-
-
-
-
 pub fn p139() -> String {
     // Looking for PTs (a, b, c) where c % (a-b) == 0
     // If (a, b, c) works then so does (ka, kb, kc) and vice-versa
@@ -1994,21 +2109,21 @@ pub fn p139() -> String {
     let mut m: i64 = 1; // i64::max is well above the numbers we'll need
 
     loop {
-        if 2*m*m >= cap {
+        if 2 * m * m >= cap {
             break;
         }
 
         let mut n = 1 + (m % 2); // opposite parity
         while n < m {
-            let peri = 2*m*(m+n);
-            if 2*m*(m+n) >= cap {
+            let peri = 2 * m * (m + n);
+            if 2 * m * (m + n) >= cap {
                 break;
             } else if gcd(m, n) == 1 {
-                let a = m*m - n*n;
-                let b = 2*m*n;
-                let c = m*m + n*n;
+                let a = m * m - n * n;
+                let b = 2 * m * n;
+                let c = m * m + n * n;
 
-                if c % (a-b) == 0 {
+                if c % (a - b) == 0 {
                     count += (cap - 1) / peri; // the number of multiples of this triangle that fit
                 }
             }
@@ -2067,7 +2182,7 @@ pub fn p140() -> String {
 
     struct PellIter {
         u: BigInt,
-        v: BigInt
+        v: BigInt,
     }
 
     impl Iterator for PellIter {
@@ -2091,7 +2206,10 @@ pub fn p140() -> String {
     let mut fundamentals: Vec<PellIter> =
         vec![(7, 1), (8, 2), (13, 5), (17, 7), (32, 14), (43, 19)]
             .into_iter()
-            .map(|(u, v)| PellIter { u: BigInt::from(u), v: BigInt::from(v) })
+            .map(|(u, v)| PellIter {
+                u: BigInt::from(u),
+                v: BigInt::from(v),
+            })
             .collect();
 
     let mut i = 0;
@@ -2113,15 +2231,11 @@ pub fn p140() -> String {
             //println!("Nugget {}: {}", count, a);
         }
 
-        i = (i+1) % 6;
+        i = (i + 1) % 6;
     }
 
     total.to_string()
 }
-
-
-
-
 
 pub fn p145() -> String {
     fn reverse(mut n: u64) -> u64 {
@@ -2148,7 +2262,7 @@ pub fn p145() -> String {
     let cap = pow(10, num_digits); // n < cap
 
     let mut total = 0;
-    for n in 1 .. cap {
+    for n in 1..cap {
         // check for leading zeroes
         if n % 10 == 0 {
             continue;
@@ -2164,16 +2278,17 @@ pub fn p145() -> String {
 pub fn p146() -> String {
     fn lcm_vec(v: &[u64]) -> u64 {
         let mut out = v[0];
-        for i in 1 .. v.len() {
+        for i in 1..v.len() {
             out = lcm(out, v[i]);
         }
         out
     }
 
     fn is_good(n: u64) -> bool {
-        let nsq = n*n;
+        let nsq = n * n;
 
-        [27, 13, 9, 7, 3, 1].into_iter()
+        [27, 13, 9, 7, 3, 1]
+            .into_iter()
             .all(|add| (nsq + add).is_prime())
     }
 
@@ -2185,18 +2300,18 @@ pub fn p146() -> String {
 
     // Fast primality check gets us in the ball park, then we filter by various remainders of n*n
     let step = lcm_vec(&vec![2, 3, 5, 7, 11, 13]);
-    let res = (0 .. step)
-        .filter(|&k| (k*k) % 2 == 0)
-        .filter(|&k| (k*k) % 3 == 1)
-        .filter(|&k| (k*k) % 5 == 0)
-        .filter(|&k| (k*k) % 7 == 2)
-        .filter(|&k| vec![0, 1, 5, 3].contains(&((k*k) % 11)))
-        .filter(|&k| vec![1, 3, 9, 10].contains(&((k*k) % 13)))
+    let res = (0..step)
+        .filter(|&k| (k * k) % 2 == 0)
+        .filter(|&k| (k * k) % 3 == 1)
+        .filter(|&k| (k * k) % 5 == 0)
+        .filter(|&k| (k * k) % 7 == 2)
+        .filter(|&k| vec![0, 1, 5, 3].contains(&((k * k) % 11)))
+        .filter(|&k| vec![1, 3, 9, 10].contains(&((k * k) % 13)))
         .collect::<Vec<u64>>();
 
     while n < cap {
         for x in res.iter().map(|r| r + n) {
-            if is_good(x) && !(x*x + 21).is_prime() {
+            if is_good(x) && !(x * x + 21).is_prime() {
                 if n < cap {
                     total += x;
                 } else {
@@ -2217,11 +2332,11 @@ pub fn p147() -> String {
 
         // (x, y) can be any point in the grid, but there is no point
         // in considering things on the right or bottom edge
-        for x in 0 .. xmax {
-            for y in 0 .. ymax {
+        for x in 0..xmax {
+            for y in 0..ymax {
                 // count the number of straight rects in the grid with
                 // UL corner (x, y)
-                total = total +(xmax - x) * (ymax - y);
+                total = total + (xmax - x) * (ymax - y);
             }
         }
 
@@ -2234,8 +2349,8 @@ pub fn p147() -> String {
         let effective_xmax = xmax * 2;
         let effective_ymax = ymax * 2;
 
-        for x in 0 .. effective_xmax {
-            for y in 1 .. effective_ymax {
+        for x in 0..effective_xmax {
+            for y in 1..effective_ymax {
                 if x % 2 != y % 2 {
                     continue;
                 }
@@ -2248,8 +2363,8 @@ pub fn p147() -> String {
                 let max_right = effective_xmax - x;
 
                 // the number of TOTAL moves (up-right and down-right) we're making for this rectangle
-                for right_moves in 2 .. max_right+1 {
-                    for up_right_moves in 1 .. min(right_moves, max_up+1) {
+                for right_moves in 2..max_right + 1 {
+                    for up_right_moves in 1..min(right_moves, max_up + 1) {
                         let down_right_moves = right_moves - up_right_moves;
                         if down_right_moves <= max_down {
                             total += 1;
@@ -2267,38 +2382,37 @@ pub fn p147() -> String {
 
     let mut total = 0;
 
-    for xmax in 1 .. xmax_max+1 {
-        for ymax in 1 .. ymax_max+1 {
+    for xmax in 1..xmax_max + 1 {
+        for ymax in 1..ymax_max + 1 {
             total = total + (count_straight(xmax, ymax) + count_tilted(xmax, ymax));
         }
     }
-    
+
     total.to_string()
 }
-
-
-
-
 
 pub fn p149() -> String {
     use std::cmp::max;
 
-    trait MaxSubiter<I: Iterator<Item=i64>> {
+    trait MaxSubiter<I: Iterator<Item = i64>> {
         fn max_subiter(self) -> MaxSubarrayIter<I>;
     }
 
-    impl <I: Iterator<Item=i64>> MaxSubiter<I> for I {
+    impl<I: Iterator<Item = i64>> MaxSubiter<I> for I {
         fn max_subiter(self) -> MaxSubarrayIter<I> {
-            MaxSubarrayIter { iter: self, best: None }
+            MaxSubarrayIter {
+                iter: self,
+                best: None,
+            }
         }
     }
 
-    struct MaxSubarrayIter<I: Iterator<Item=i64>> {
+    struct MaxSubarrayIter<I: Iterator<Item = i64>> {
         iter: I,
-        best: Option<i64>
+        best: Option<i64>,
     }
 
-    impl <I: Iterator<Item=i64>> Iterator for MaxSubarrayIter<I> {
+    impl<I: Iterator<Item = i64>> Iterator for MaxSubarrayIter<I> {
         type Item = i64;
 
         fn next(&mut self) -> Option<i64> {
@@ -2321,7 +2435,8 @@ pub fn p149() -> String {
         let mut lagged: Vec<i64> = Vec::with_capacity(cap);
 
         for k in 0..55 {
-            let next = ((100003 - (200003 * (k + 1)) + (300007 * pow(k + 1, 3))) % 1000000) - 500000;
+            let next =
+                ((100003 - (200003 * (k + 1)) + (300007 * pow(k + 1, 3))) % 1000000) - 500000;
             lagged.push(next);
         }
 
@@ -2336,34 +2451,44 @@ pub fn p149() -> String {
     let mut best = 0;
 
     // sweep right
-    for y in 0 .. 2_000 {
-        let max_right = (0 .. 2_000)
+    for y in 0..2_000 {
+        let max_right = (0..2_000)
             .map(|x| *grid.get(x, y).unwrap())
-            .max_subiter().max().unwrap();
+            .max_subiter()
+            .max()
+            .unwrap();
         best = max_right;
     }
 
     // sweep down
-    for x in 0 .. 2_000 {
-        let max_down = (0 .. 2_000)
+    for x in 0..2_000 {
+        let max_down = (0..2_000)
             .map(|y| *grid.get(x, y).unwrap())
-            .max_subiter().max().unwrap();
+            .max_subiter()
+            .max()
+            .unwrap();
         best = max(best, max_down);
     }
 
     // sweep down-right; can start from left wall or top wall
-    for start_y in 0 .. 2_000 { // left wall
-        let left_dr_max = (start_y .. 2_000) // our end will be when y is too big
+    for start_y in 0..2_000 {
+        // left wall
+        let left_dr_max = (start_y..2_000) // our end will be when y is too big
             .map(|y| *grid.get(y - start_y, y).unwrap())
-            .max_subiter().max().unwrap();
+            .max_subiter()
+            .max()
+            .unwrap();
 
         best = max(best, left_dr_max);
     }
 
-    for start_x in 0 .. 2_000 { // top wall
-        let top_dr_max = (start_x .. 2_000) // end when x is too big
+    for start_x in 0..2_000 {
+        // top wall
+        let top_dr_max = (start_x..2_000) // end when x is too big
             .map(|x| *grid.get(x, x - start_x).unwrap())
-            .max_subiter().max().unwrap();
+            .max_subiter()
+            .max()
+            .unwrap();
 
         best = max(best, top_dr_max);
     }
@@ -2371,18 +2496,25 @@ pub fn p149() -> String {
     // now sweep up-right; can start from left wall or bottom wall
     use num::iter::range_step_inclusive;
 
-    for start_y in 0 .. 2_000_i64 { // left wall
-        let left_ur_max = range_step_inclusive(start_y, 0, -1) // end when y breaks the top
-            .map(|y| *grid.get((start_y - y) as usize, y as usize).unwrap())
-            .max_subiter().max().unwrap();
+    for start_y in 0..2_000_i64 {
+        // left wall
+        let left_ur_max =
+            range_step_inclusive(start_y, 0, -1) // end when y breaks the top
+                .map(|y| *grid.get((start_y - y) as usize, y as usize).unwrap())
+                .max_subiter()
+                .max()
+                .unwrap();
 
         best = max(best, left_ur_max);
     }
 
-    for start_x in 0 .. 2_000 { // bottom wall
-        let bott_ur_max = (start_x .. 2_000)
+    for start_x in 0..2_000 {
+        // bottom wall
+        let bott_ur_max = (start_x..2_000)
             .map(|x| *grid.get(x, 1_999 - (x - start_x)).unwrap())
-            .max_subiter().max().unwrap();
+            .max_subiter()
+            .max()
+            .unwrap();
 
         best = max(best, bott_ur_max);
     }

@@ -9,7 +9,7 @@ pub fn p587() -> String {
     let mut n: f64 = 1.0; // as a float, so we don't have to constantly cast it
 
     loop {
-        let x = (n*n + n - n * (2.0*n).sqrt()) / (n*n + 1.0);
+        let x = (n * n + n - n * (2.0 * n).sqrt()) / (n * n + 1.0);
         let y = x / n;
 
         let left_area = x * y / 2.0;

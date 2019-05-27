@@ -1,9 +1,8 @@
-use std::collections::{HashMap};
+use std::collections::HashMap;
 
-use num::pow::{pow};
+use num::pow::pow;
 
-use euler_lib::numerics::{powmod};
-
+use euler_lib::numerics::powmod;
 
 pub fn p204() -> String {
     fn next_hamming(last_hamming: &Vec<u64>, next_prime: u64, cap: u64) -> Vec<u64> {
@@ -23,8 +22,11 @@ pub fn p204() -> String {
 
     let mut hamming = vec![1];
     // list of primes below 100; too lazy to compute via code
-    for p in vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97] {
-        hamming = next_hamming(&hamming, p, cap+1);
+    for p in vec![
+        2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89,
+        97,
+    ] {
+        hamming = next_hamming(&hamming, p, cap + 1);
     }
 
     hamming.len().to_string()
@@ -38,12 +40,12 @@ pub fn p205() -> String {
             return (out, 1);
         }
 
-        let (prev_distr, prev_total) = get_distr(faces, num_dice-1);
+        let (prev_distr, prev_total) = get_distr(faces, num_dice - 1);
         let mut out: HashMap<usize, usize> = HashMap::new();
 
-        for face in 1 .. (faces+1) {
+        for face in 1..(faces + 1) {
             for (roll, mult) in &prev_distr {
-                *out.entry(face+roll).or_insert(0) += mult;
+                *out.entry(face + roll).or_insert(0) += mult;
             }
         }
 
@@ -79,7 +81,7 @@ pub fn p206() -> String {
         }
         true
     }
-    
+
     // x^2 ends in 0 so x ends in 0 so x = 10y for some y
     // y^2 ends in 9 so y ends in 3 or 7, so y=10z+3 or 10z+7 for some z
     // x^2 has 19 digits so x has 10 digits so y has 9 digits so z has 8 digits
@@ -90,24 +92,22 @@ pub fn p206() -> String {
     let z_min = pow(10, 7);
     let z_max = 2 * pow(10, 7);
 
-    for z in z_min .. z_max {
-        let y = z*10 + 3;
+    for z in z_min..z_max {
+        let y = z * 10 + 3;
 
-        if works(y*y) {
-            return (y*10).to_string();
+        if works(y * y) {
+            return (y * 10).to_string();
         }
 
-        let y = z*10 + 7;
+        let y = z * 10 + 7;
 
-        if works(y*y) {
-            return (y*10).to_string();
+        if works(y * y) {
+            return (y * 10).to_string();
         }
     }
 
     panic!("Did not find solution");
 }
-
-
 
 pub fn p231() -> String {
     // sum prime factors satisfies f(ab)=f(a)+f(b)
@@ -119,12 +119,12 @@ pub fn p231() -> String {
 
     const CAP: usize = 20000000;
 
-    let mut sieve: Vec<usize> = Vec::with_capacity(CAP+1);
-    for _i in 0 .. CAP+1 {
+    let mut sieve: Vec<usize> = Vec::with_capacity(CAP + 1);
+    for _i in 0..CAP + 1 {
         sieve.push(0);
     }
 
-    for p in 2 .. CAP+1 {
+    for p in 2..CAP + 1 {
         // then p is prime
         if sieve[p] == 0 {
             let mut p_pow = p;
@@ -135,18 +135,16 @@ pub fn p231() -> String {
                     sieve[pp_mult] += p;
                     pp_mult += p_pow;
                 }
-                
+
                 p_pow *= p;
             }
         }
     }
-    
-    let fact_sum = |n: usize| (2..n+1).map(|k| sieve[k]).sum::<usize>();
-    let ncr = |n, r| (fact_sum(n) - fact_sum(r) - fact_sum(n-r));
+
+    let fact_sum = |n: usize| (2..n + 1).map(|k| sieve[k]).sum::<usize>();
+    let ncr = |n, r| (fact_sum(n) - fact_sum(r) - fact_sum(n - r));
     ncr(20000000, 15000000).to_string()
 }
-
-
 
 pub fn p250() -> String {
     let mult_mod = pow(10, 16);
@@ -156,12 +154,12 @@ pub fn p250() -> String {
     let mut possibilities = HashMap::new();
     possibilities.insert(0 as u64, 1 as usize);
 
-    for i in 1 .. cap+1 {
+    for i in 1..cap + 1 {
         let mut new_poss = possibilities.clone();
         let addl = powmod(i, i, modulus);
 
         for (key, count) in possibilities.iter() {
-            let new_key = (key+addl) % modulus;
+            let new_key = (key + addl) % modulus;
             let new_count = new_poss.entry(new_key).or_insert(0);
             *new_count = (*new_count + count) % mult_mod;
         }
@@ -170,5 +168,5 @@ pub fn p250() -> String {
     }
 
     // subtract 1 because they want nonempty subsets
-    (possibilities.get(&0).unwrap()-1).to_string()
+    (possibilities.get(&0).unwrap() - 1).to_string()
 }

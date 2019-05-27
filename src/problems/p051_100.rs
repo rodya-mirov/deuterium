@@ -1,23 +1,21 @@
-use std::ops::{Add, Sub, Mul, Div};
 use std::cmp::{max, min, Ordering};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
-use std::collections::{HashMap, HashSet, BinaryHeap};
+use std::ops::{Add, Div, Mul, Sub};
 use std::str::FromStr;
 
 use itertools;
 
 use num;
-use num::{pow};
 use num::bigint::BigInt;
+use num::pow;
 
-use euler_lib::prelude::*;
+use euler_lib::data::RevSortBy;
 use euler_lib::numerics;
-use euler_lib::data::{RevSortBy};
-use euler_lib::toys;
 use euler_lib::numerics::Partial;
-
-
+use euler_lib::prelude::*;
+use euler_lib::toys;
 
 pub fn problem(problem_number: i32) -> String {
     match problem_number {
@@ -73,8 +71,11 @@ pub fn problem(problem_number: i32) -> String {
         100 => p100(),
 
         _ => {
-            panic!("Problem {} should not be passed to this module!", problem_number);
-        },
+            panic!(
+                "Problem {} should not be passed to this module!",
+                problem_number
+            );
+        }
     }
 }
 
@@ -93,7 +94,7 @@ pub fn p051() -> String {
     impl Poss {
         fn count(&self, primes: &HashSet<usize>) -> usize {
             let mut total = 0;
-            for d in 0 .. 10 {
+            for d in 0..10 {
                 let p = self.replace_with(d);
                 if primes.contains(&p) {
                     total += 1;
@@ -104,7 +105,7 @@ pub fn p051() -> String {
 
         fn wins(&self, primes: &HashSet<usize>) -> Vec<usize> {
             let mut out = Vec::new();
-            for d in 0 .. 10 {
+            for d in 0..10 {
                 let p = self.replace_with(d);
                 if primes.contains(&p) {
                     out.push(p);
@@ -128,7 +129,7 @@ pub fn p051() -> String {
         }
 
         fn next(mut self) -> Poss {
-            for i in 0 .. self.digits.len() {
+            for i in 0..self.digits.len() {
                 if self.digits[i] == None {
                     self.digits[i] = Some(0);
                 } else if self.digits[i] == Some(9) {
@@ -141,7 +142,7 @@ pub fn p051() -> String {
             }
 
             let mut new_digits = Vec::with_capacity(self.digits.len() + 1);
-            for _ in 0 .. self.digits.len() + 1 {
+            for _ in 0..self.digits.len() + 1 {
                 new_digits.push(Some(0));
             }
             Poss { digits: new_digits }
@@ -168,7 +169,7 @@ pub fn p051() -> String {
         }
 
         fn start() -> Poss {
-            let digits = vec![ None ];
+            let digits = vec![None];
             Poss { digits }
         }
     }
@@ -195,11 +196,14 @@ pub fn p052() -> String {
         out
     }
 
-    for n in itertools::unfold(0, |state| { *state += 1; Some(*state) }) {
+    for n in itertools::unfold(0, |state| {
+        *state += 1;
+        Some(*state)
+    }) {
         let dc = digit_counts(n);
 
-        if (2 .. 7).all(|k| dc == digit_counts(k * n)) {
-            return n.to_string()
+        if (2..7).all(|k| dc == digit_counts(k * n)) {
+            return n.to_string();
         }
     }
 
@@ -210,7 +214,7 @@ pub fn p053() -> String {
     #[derive(Eq, PartialEq, Debug, Hash, Clone, Copy)]
     enum Fact {
         Big,
-        Small(u64)
+        Small(u64),
     }
 
     impl Fact {
@@ -224,7 +228,7 @@ pub fn p053() -> String {
         fn small_value(&self) -> u64 {
             match self {
                 &Fact::Small(n) => n,
-                &Fact::Big => panic!("Can't unwrap BIG")
+                &Fact::Big => panic!("Can't unwrap BIG"),
             }
         }
     }
@@ -251,12 +255,11 @@ pub fn p053() -> String {
         if cache.contains_key(&key) {
             *cache.get(&key).unwrap()
         } else {
-            let val =
-                if n == 0 || k == 0 || k == n {
-                    Fact::Small(1)
-                } else {
-                    fact(n-1, k, cache) + fact(n-1, k-1, cache)
-                };
+            let val = if n == 0 || k == 0 || k == n {
+                Fact::Small(1)
+            } else {
+                fact(n - 1, k, cache) + fact(n - 1, k - 1, cache)
+            };
 
             cache.insert(key, val);
             *cache.get(&key).unwrap()
@@ -266,8 +269,8 @@ pub fn p053() -> String {
     let mut bigs = 0;
     let mut cache = HashMap::new();
 
-    for n in 0 .. 100+1 {
-        for k in 0 .. n+1 {
+    for n in 0..100 + 1 {
+        for k in 0..n + 1 {
             if fact(n, k, &mut cache).is_big() {
                 bigs += 1;
             }
@@ -283,7 +286,7 @@ pub fn p054() -> String {
 
     #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Hash, Copy, Clone)]
     struct Rank {
-        rank: u32
+        rank: u32,
     }
 
     impl Rank {
@@ -294,7 +297,7 @@ pub fn p054() -> String {
                 'Q' => 12,
                 'K' => 13,
                 'A' => 14,
-                num => num.to_digit(10).unwrap()
+                num => num.to_digit(10).unwrap(),
             };
             Rank { rank }
         }
@@ -302,20 +305,20 @@ pub fn p054() -> String {
 
     #[derive(Eq, PartialEq, Debug, Hash, Copy, Clone)]
     struct Suit {
-        suit: char
+        suit: char,
     }
 
     #[derive(Eq, PartialEq, Debug, Hash, Copy, Clone)]
     struct Card {
         rank: Rank,
-        suit: Suit
+        suit: Suit,
     }
 
     impl Card {
         fn new(chars: Vec<char>) -> Card {
             Card {
                 rank: Rank::new(chars[0]),
-                suit: Suit { suit: chars[1] }
+                suit: Suit { suit: chars[1] },
             }
         }
     }
@@ -335,7 +338,11 @@ pub fn p054() -> String {
 
     impl Display for Hand {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "{} {} {} {} {}", self.cards[0], self.cards[1], self.cards[2], self.cards[3], self.cards[4])
+            write!(
+                f,
+                "{} {} {} {} {}",
+                self.cards[0], self.cards[1], self.cards[2], self.cards[3], self.cards[4]
+            )
         }
     }
 
@@ -349,7 +356,11 @@ pub fn p054() -> String {
                 *suits.entry(card.suit).or_insert(0) += 1;
             }
 
-            Hand { cards: cards.to_owned(), ranks, suits }
+            Hand {
+                cards: cards.to_owned(),
+                ranks,
+                suits,
+            }
         }
 
         fn str_flush(hand: &Hand) -> Option<Rank> {
@@ -364,7 +375,8 @@ pub fn p054() -> String {
         }
 
         fn four_kind(hand: &Hand) -> Option<Rank> {
-            hand.ranks.iter()
+            hand.ranks
+                .iter()
                 .filter_map(|(&k, &v)| if v >= 4 { Some(k) } else { None })
                 .max()
         }
@@ -375,8 +387,16 @@ pub fn p054() -> String {
                 return None;
             }
 
-            let pair = hand.ranks.iter()
-                .filter_map(|(&k, &v)| if k != three_kind.unwrap() && v >= 2 { Some(k) } else { None })
+            let pair = hand
+                .ranks
+                .iter()
+                .filter_map(|(&k, &v)| {
+                    if k != three_kind.unwrap() && v >= 2 {
+                        Some(k)
+                    } else {
+                        None
+                    }
+                })
                 .nth(0);
 
             if pair.is_some() {
@@ -387,7 +407,9 @@ pub fn p054() -> String {
         }
 
         fn flush(hand: &Hand) -> Option<Rank> {
-            let flush_suit = hand.suits.iter()
+            let flush_suit = hand
+                .suits
+                .iter()
                 .filter_map(|(&k, &v)| if v >= 5 { Some(k) } else { None })
                 .nth(0);
 
@@ -399,9 +421,12 @@ pub fn p054() -> String {
         }
 
         fn straight(hand: &Hand) -> Option<Rank> {
-            let mut ranks = hand.cards.iter()
+            let mut ranks = hand
+                .cards
+                .iter()
                 .map(|&card| card.rank)
-                .collect::<HashSet<Rank>>().into_iter() // de-duping
+                .collect::<HashSet<Rank>>()
+                .into_iter() // de-duping
                 .collect::<Vec<Rank>>();
 
             if ranks.len() < 5 {
@@ -417,13 +442,16 @@ pub fn p054() -> String {
         }
 
         fn three_kind(hand: &Hand) -> Option<Rank> {
-            hand.ranks.iter()
+            hand.ranks
+                .iter()
                 .filter_map(|(&k, &v)| if v >= 3 { Some(k) } else { None })
                 .max()
         }
 
         fn two_pair(hand: &Hand) -> Option<Rank> {
-            let pairs: Vec<Rank> = hand.ranks.iter()
+            let pairs: Vec<Rank> = hand
+                .ranks
+                .iter()
                 .filter_map(|(&k, &v)| if v >= 2 { Some(k) } else { None })
                 .collect();
 
@@ -435,31 +463,37 @@ pub fn p054() -> String {
         }
 
         fn one_pair(hand: &Hand) -> Option<Rank> {
-            hand.ranks.iter()
+            hand.ranks
+                .iter()
                 .filter_map(|(&k, &v)| if v >= 2 { Some(k) } else { None })
                 .max()
         }
 
         fn high_card(hand: &Hand) -> Option<Rank> {
-            hand.ranks.iter()
+            hand.ranks
+                .iter()
                 .filter_map(|(&k, &v)| if v >= 1 { Some(k) } else { None })
                 .max()
         }
     }
 
     enum WinStatus {
-        One, Two, Both, Neither
+        One,
+        Two,
+        Both,
+        Neither,
     }
 
     #[derive(Eq, PartialEq, Debug)]
     struct Play {
         one: Hand,
-        two: Hand
+        two: Hand,
     }
 
     impl Play {
         fn new(line: &str) -> Play {
-            let tokens: Vec<Card> = line.split(" ")
+            let tokens: Vec<Card> = line
+                .split(" ")
                 .map(|token| Card::new(token.chars().collect::<Vec<char>>()))
                 .collect();
 
@@ -487,7 +521,7 @@ pub fn p054() -> String {
                         println!("One: {}", self.one);
                         println!("Two: {}", self.two);
                         panic!("Ambiguous?!")
-                    },
+                    }
                     WinStatus::One => return true,
                     WinStatus::Two => return false,
                     WinStatus::Neither => continue,
@@ -533,12 +567,16 @@ pub fn p054() -> String {
     }
 
     let mut text = String::new();
-    File::open("resources/p054.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p054.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
 
-    text.lines().map(Play::new)
+    text.lines()
+        .map(Play::new)
         .filter(Play::one_wins)
-        .count().to_string()
+        .count()
+        .to_string()
 }
 
 pub fn p055() -> String {
@@ -558,7 +596,7 @@ pub fn p055() -> String {
     fn is_lychrel(mut n: BigInt) -> bool {
         // have to do at least one iteration
         n = &n + &rev(n.clone());
-        for _ in 1 .. 50 {
+        for _ in 1..50 {
             let r = rev(n.clone());
             if &n == &r {
                 return false;
@@ -570,23 +608,25 @@ pub fn p055() -> String {
         true
     }
 
-    (1 .. 10_000)
+    (1..10_000)
         .filter(|n| is_lychrel(BigInt::from(*n)))
-        .count().to_string()
+        .count()
+        .to_string()
 }
 
 pub fn p056() -> String {
     fn power(a: u64, b: usize) -> u64 {
         pow(BigInt::from(a), b)
-            .to_str_radix(10).chars()
+            .to_str_radix(10)
+            .chars()
             .map(|c| c.to_digit(10).unwrap() as u64)
             .sum::<u64>()
     }
 
     let mut best = 0;
 
-    for a in 1 .. 101 {
-        for b in 1 .. 101 {
+    for a in 1..101 {
+        for b in 1..101 {
             best = max(best, power(a, b));
         }
     }
@@ -625,10 +665,10 @@ pub fn p058() -> String {
             false
         } else {
             for p in primes {
-                if p*p > n {
-                    return true
+                if p * p > n {
+                    return true;
                 } else if n % p == 0 {
-                    return false
+                    return false;
                 }
             }
             panic!("Prime set too small!");
@@ -636,7 +676,10 @@ pub fn p058() -> String {
     }
 
     let prime_cap = 500_000; // picked arbitrarily; good up to cap**2
-    let primes = &numerics::all_primes(prime_cap).into_iter().map(|p| p as u64).collect();
+    let primes = &numerics::all_primes(prime_cap)
+        .into_iter()
+        .map(|p| p as u64)
+        .collect();
 
     // skipping the first diagonal to avoid early stopping
     let mut side_length: u64 = 3;
@@ -647,7 +690,7 @@ pub fn p058() -> String {
     while prime_count * 10 >= count {
         side_length += 2;
 
-        for _ in 0 .. 4 {
+        for _ in 0..4 {
             n = n.checked_add(side_length - 1).unwrap();
             count += 1;
             if is_prime(n, primes) {
@@ -666,7 +709,7 @@ pub fn p059() -> String {
         let start = 'a' as u8;
         let end = 'z' as u8;
 
-        (start .. end+1).collect::<Vec<u8>>()
+        (start..end + 1).collect::<Vec<u8>>()
     };
 
     fn decrypt(encrypted: &[u8], password: &[u8; 3]) -> Vec<char> {
@@ -675,7 +718,7 @@ pub fn p059() -> String {
         let mut i = 0;
         for &c in encrypted {
             out.push((c ^ password[i]) as char);
-            i = (i+1) % 3;
+            i = (i + 1) % 3;
         }
 
         out
@@ -690,23 +733,35 @@ pub fn p059() -> String {
             return false;
         }
 
-        for i in 0 .. (text.len() - test.len() + 1) {
-            if &text[i .. i+test.len()] == test {
+        for i in 0..(text.len() - test.len() + 1) {
+            if &text[i..i + test.len()] == test {
                 return true;
             }
         }
         false
     }
 
-    File::open("resources/p059.txt").unwrap()
-        .read_to_string(&mut text).unwrap();
+    File::open("resources/p059.txt")
+        .unwrap()
+        .read_to_string(&mut text)
+        .unwrap();
 
-    let encrypted: Vec<u8> = text.trim().split(",")
+    let encrypted: Vec<u8> = text
+        .trim()
+        .split(",")
         .map(|s| s.trim().parse::<u8>().unwrap())
         .collect();
 
-    let tests = vec![ vec!['t', 'h', 'e'], vec!['i', 's'], vec!['o', 'f'],
-                      vec!['e'], vec!['a'], vec!['a', 'm'], vec!['i', 'n'], vec!['i', 'n', 'g']];
+    let tests = vec![
+        vec!['t', 'h', 'e'],
+        vec!['i', 's'],
+        vec!['o', 'f'],
+        vec!['e'],
+        vec!['a'],
+        vec!['a', 'm'],
+        vec!['i', 'n'],
+        vec!['i', 'n', 'g'],
+    ];
 
     let mut wins = Vec::new();
     let mut password = [0; 3];
@@ -732,9 +787,7 @@ pub fn p059() -> String {
     }
 
     let win: Vec<char> = wins.pop().unwrap();
-    win.into_iter()
-        .map(|c| c as u32)
-        .sum::<u32>().to_string()
+    win.into_iter().map(|c| c as u32).sum::<u32>().to_string()
 }
 
 pub fn p060() -> String {
@@ -766,14 +819,12 @@ pub fn p060() -> String {
         a * tp + b
     };
 
-    let good_pair = |a, b| {
-        is_prime(concat(a, b)) && is_prime(concat(b, a))
-    };
+    let good_pair = |a, b| is_prime(concat(a, b)) && is_prime(concat(b, a));
 
     let mut best_sum: Option<usize> = None;
     let mut saved = HashMap::new();
 
-    for i1 in 0 .. primes.len() as usize {
+    for i1 in 0..primes.len() as usize {
         let p1 = primes[i1];
         let s1 = p1;
         if let Some(n) = best_sum {
@@ -784,7 +835,7 @@ pub fn p060() -> String {
 
         saved.insert(p1, Vec::new());
 
-        for i2 in 0 .. i1 {
+        for i2 in 0..i1 {
             let p2 = primes[i2];
             let s2 = s1 + p2;
 
@@ -801,7 +852,7 @@ pub fn p060() -> String {
             saved.get_mut(&p1).unwrap().push(p2);
             let useful = saved.get(&p1).unwrap();
 
-            for i3 in 0 .. useful.len() {
+            for i3 in 0..useful.len() {
                 let p3 = useful[i3];
                 let s3 = s2 + p3;
 
@@ -815,7 +866,7 @@ pub fn p060() -> String {
                     continue;
                 }
 
-                for i4 in 0 .. i3 {
+                for i4 in 0..i3 {
                     let p4 = useful[i4];
                     let s4 = s3 + p4;
 
@@ -829,7 +880,7 @@ pub fn p060() -> String {
                         continue;
                     }
 
-                    for i5 in 0 .. i4 {
+                    for i5 in 0..i4 {
                         let p5 = useful[i5];
                         let s5 = s4 + p5;
 
@@ -846,7 +897,6 @@ pub fn p060() -> String {
                         println!("Found: {} + {} + {} + {} + {} = {}", p1, p2, p3, p4, p5, s5);
                         best_sum = Some(s5);
                     }
-
                 }
             }
         }
@@ -861,7 +911,8 @@ pub fn p060() -> String {
 
 pub fn p061() -> String {
     fn mapper<F>(f: F) -> HashSet<usize>
-        where F: Fn(usize) -> usize
+    where
+        F: Fn(usize) -> usize,
     {
         let mut out = HashSet::new();
         let mut n: usize = 1;
@@ -879,12 +930,12 @@ pub fn p061() -> String {
         out
     }
 
-    let tri_vec = mapper(|n| (n*(n+1))/2);
-    let squ_vec = mapper(|n| n*n);
-    let pen_vec = mapper(|n| (n*(3*n-1))/2);
-    let hex_vec = mapper(|n| n*(2*n-1));
-    let sep_vec = mapper(|n| (n*(5*n-3))/2);
-    let oct_vec = mapper(|n| n*(3*n-2));
+    let tri_vec = mapper(|n| (n * (n + 1)) / 2);
+    let squ_vec = mapper(|n| n * n);
+    let pen_vec = mapper(|n| (n * (3 * n - 1)) / 2);
+    let hex_vec = mapper(|n| n * (2 * n - 1));
+    let sep_vec = mapper(|n| (n * (5 * n - 3)) / 2);
+    let oct_vec = mapper(|n| n * (3 * n - 2));
 
     let mut all = HashSet::new();
     for ref s in vec![&tri_vec, &squ_vec, &pen_vec, &hex_vec, &sep_vec, &oct_vec] {
@@ -893,18 +944,19 @@ pub fn p061() -> String {
         }
     }
 
-    let chain = |a, b| {
-        a % 100 == b / 100
-    };
+    let chain = |a, b| a % 100 == b / 100;
 
     let works = |a, b, c, d, e, f| {
         // super inefficient but works for us today ...
         let start = vec![a, b, c, d, e, f];
-        for p in 0 .. 720 {
+        for p in 0..720 {
             let perm = toys::nth_permutation(&start, p);
-            if tri_vec.contains(&perm[0]) && squ_vec.contains(&perm[1])
-                && pen_vec.contains(&perm[2]) && hex_vec.contains(&perm[3])
-                && sep_vec.contains(&perm[4]) && oct_vec.contains(&perm[5])
+            if tri_vec.contains(&perm[0])
+                && squ_vec.contains(&perm[1])
+                && pen_vec.contains(&perm[2])
+                && hex_vec.contains(&perm[3])
+                && sep_vec.contains(&perm[4])
+                && oct_vec.contains(&perm[5])
             {
                 return true;
             }
@@ -1004,7 +1056,7 @@ pub fn p063() -> String {
     // fact: 10^n is always an n+1-digit number so the base is {1, ..., 9}
     let mut total = 0;
 
-    for base in (1 .. 10).map(|b| BigInt::from(b)) {
+    for base in (1..10).map(|b| BigInt::from(b)) {
         println!("Base: {}", base);
         let mut power = base.clone();
         let mut low_bd = BigInt::from(1);
@@ -1038,7 +1090,7 @@ pub fn p064() -> String {
             }
         }
 
-        for i in 0 .. seen_vec.len() {
+        for i in 0..seen_vec.len() {
             if seen_vec[i] == start {
                 return seen_vec.len() - i;
             }
@@ -1047,21 +1099,26 @@ pub fn p064() -> String {
         cannot_happen()
     }
 
-    (1 .. 10_001).map(|d| cycle_length(d))
+    (1..10_001)
+        .map(|d| cycle_length(d))
         .filter(|&len| len % 2 == 1)
-        .count().to_string()
+        .count()
+        .to_string()
 }
 
 pub fn p065() -> String {
     #[derive(Debug)]
     struct Rational {
         num: BigInt,
-        den: BigInt
+        den: BigInt,
     }
 
     impl Rational {
         fn from(n: u64) -> Rational {
-            Rational { num: BigInt::from(n), den: BigInt::from(1) }
+            Rational {
+                num: BigInt::from(n),
+                den: BigInt::from(1),
+            }
         }
 
         fn flip_add(&self, n: u64) -> Rational {
@@ -1075,21 +1132,26 @@ pub fn p065() -> String {
             let g = num::integer::gcd(num.clone(), den.clone());
             Rational {
                 num: &num / &g,
-                den: &den / &g
+                den: &den / &g,
             }
         }
     }
 
     let cap = 100;
 
-    let mut conv: Vec<u64> = itertools::unfold(
-        0,
-        |state| {
-            let val =
-                if *state == 0 { 2 } else if *state % 3 == 2 { ((*state + 1) / 3) * 2 } else { 1 };
-            *state += 1;
-            Some(val)
-        }).take(cap).collect();
+    let mut conv: Vec<u64> = itertools::unfold(0, |state| {
+        let val = if *state == 0 {
+            2
+        } else if *state % 3 == 2 {
+            ((*state + 1) / 3) * 2
+        } else {
+            1
+        };
+        *state += 1;
+        Some(val)
+    })
+    .take(cap)
+    .collect();
 
     let mut frac = Rational::from(conv.pop().unwrap());
 
@@ -1097,14 +1159,19 @@ pub fn p065() -> String {
         frac = frac.flip_add(conv.pop().unwrap());
     }
 
-    frac.num.to_string().chars().map(|c| c.to_digit(10).unwrap() as u64).sum::<u64>().to_string()
+    frac.num
+        .to_string()
+        .chars()
+        .map(|c| c.to_digit(10).unwrap() as u64)
+        .sum::<u64>()
+        .to_string()
 }
 
 pub fn p066() -> String {
     fn min_sol(d: BigInt) -> BigInt {
         let one = BigInt::from(1);
         for (x, y) in numerics::RootConvergentIter::new(&d) {
-            if &x*&x - (&d)*&(&y*&y) == one {
+            if &x * &x - (&d) * &(&y * &y) == one {
                 return x;
             }
         }
@@ -1113,12 +1180,12 @@ pub fn p066() -> String {
     }
 
     let cap = 1_000;
-    let squares: HashSet<_> = (1 .. cap+1).map(|n| n*n).collect();
+    let squares: HashSet<_> = (1..cap + 1).map(|n| n * n).collect();
 
     let mut max_x = BigInt::from(0);
     let mut max_d = 0;
 
-    for d in (1 .. cap+1).filter(|&n| !squares.contains(&n)) {
+    for d in (1..cap + 1).filter(|&n| !squares.contains(&n)) {
         let x = min_sol(BigInt::from(d));
         if x > max_x {
             max_x = x;
@@ -1132,23 +1199,35 @@ pub fn p066() -> String {
 pub fn p067() -> String {
     let mut text = String::new();
 
-    File::open("resources/p067.txt").expect("Error reading file?")
-        .read_to_string(&mut text).expect("Error reading file?");
+    File::open("resources/p067.txt")
+        .expect("Error reading file?")
+        .read_to_string(&mut text)
+        .expect("Error reading file?");
 
-    let grid = text.lines()
-        .map(|line| line.split_whitespace().map(|token| token.parse::<u64>().unwrap()).collect::<Vec<u64>>())
+    let grid = text
+        .lines()
+        .map(|line| {
+            line.split_whitespace()
+                .map(|token| token.parse::<u64>().unwrap())
+                .collect::<Vec<u64>>()
+        })
         .collect::<Vec<Vec<u64>>>();
 
     let mut cache = HashMap::new();
 
-    fn best_path(x: usize, y: usize, grid: &Vec<Vec<u64>>, cache: &mut HashMap<(usize, usize), u64>) -> u64 {
+    fn best_path(
+        x: usize,
+        y: usize,
+        grid: &Vec<Vec<u64>>,
+        cache: &mut HashMap<(usize, usize), u64>,
+    ) -> u64 {
         if y == grid.len() - 1 {
             *grid.get(y).unwrap().get(x).unwrap()
         } else if cache.contains_key(&(x, y)) {
             *cache.get(&(x, y)).unwrap()
         } else {
-            let left = best_path(x, y+1, grid, cache);
-            let right = best_path(x+1, y+1, grid, cache);
+            let left = best_path(x, y + 1, grid, cache);
+            let right = best_path(x + 1, y + 1, grid, cache);
 
             let val = max(left, right) + grid.get(y).unwrap().get(x).unwrap();
 
@@ -1165,7 +1244,7 @@ pub fn p068() -> String {
 
     #[derive(Eq, PartialEq, Debug)]
     struct NGon {
-        items: [[i32; 3]; 5]
+        items: [[i32; 3]; 5],
     }
 
     impl NGon {
@@ -1181,14 +1260,15 @@ pub fn p068() -> String {
                     [v[3], v[2], v[4]],
                     [v[5], v[4], v[6]],
                     [v[7], v[6], v[8]],
-                    [v[9], v[8], v[1]]
-                ]
-            }.canonical()
+                    [v[9], v[8], v[1]],
+                ],
+            }
+            .canonical()
         }
 
         fn canonical(self) -> NGon {
             let mut least_ind = 0;
-            for i in 1 .. self.items.len() {
+            for i in 1..self.items.len() {
                 if self.items[i][0] < self.items[least_ind][0] {
                     least_ind = i;
                 }
@@ -1269,7 +1349,12 @@ pub fn p068() -> String {
         true
     }
 
-    fn permutations(digits: &[i32], seen: &mut HashSet<i32>, built: &mut Vec<i32>, all: &mut Vec<NGon>) {
+    fn permutations(
+        digits: &[i32],
+        seen: &mut HashSet<i32>,
+        built: &mut Vec<i32>,
+        all: &mut Vec<NGon>,
+    ) {
         if built.len() == digits.len() {
             let next = NGon::new(built);
             if all.iter().all(|ref ngon| next != **ngon) {
@@ -1303,7 +1388,8 @@ pub fn p068() -> String {
         println!("{:?}, {}", x, x.to_string());
     }
 
-    let mut strings: Vec<String> = options.into_iter()
+    let mut strings: Vec<String> = options
+        .into_iter()
         .map(|ngon| ngon.to_string())
         .filter(|&ref s| s.chars().count() == 16)
         .collect();
@@ -1324,7 +1410,8 @@ pub fn p069() -> String {
         }
     }
 
-    let best = numerics::all_totient(cap +1).into_iter()
+    let best = numerics::all_totient(cap + 1)
+        .into_iter()
         .enumerate() // (i, phi(i))
         .fold((1, 1), frac_max);
 
@@ -1381,7 +1468,8 @@ pub fn p071() -> String {
 
         if mid.1 > d_cap {
             return left.0.to_string();
-        } else if mid.0 * goal.1 >= goal.0 * mid.1 { // mid >= goal
+        } else if mid.0 * goal.1 >= goal.0 * mid.1 {
+            // mid >= goal
             right = mid;
         } else {
             left = mid;
@@ -1392,10 +1480,12 @@ pub fn p071() -> String {
 pub fn p072() -> String {
     let d_cap = 1_000_000;
 
-    numerics::all_totient(d_cap+1).into_iter()
+    numerics::all_totient(d_cap + 1)
+        .into_iter()
         .skip(2) // skip 0 (irrelevant) and 1 (corresponds to 0 and 1, not "proper")
         .map(|n| n as u64) // overflow safe because it's at most d_cap^2
-        .sum::<u64>().to_string()
+        .sum::<u64>()
+        .to_string()
 }
 
 pub fn p073() -> String {
@@ -1439,8 +1529,8 @@ pub fn p073() -> String {
 pub fn p074() -> String {
     let mut fact = HashMap::new();
     fact.insert(0, 1);
-    for n in 1 .. 10 {
-        let prev = *fact.get(&(n-1)).unwrap();
+    for n in 1..10 {
+        let prev = *fact.get(&(n - 1)).unwrap();
         fact.insert(n, n * prev);
     }
     let fact = fact; // immutable now
@@ -1469,12 +1559,11 @@ pub fn p074() -> String {
             *cache.get(&n).unwrap()
         } else {
             let dfs = df_sum(n, fact);
-            let val =
-                if dfs == n {
-                    1
-                } else {
-                    1 + chain_length(dfs, cache, fact)
-                };
+            let val = if dfs == n {
+                1
+            } else {
+                1 + chain_length(dfs, cache, fact)
+            };
             cache.insert(n, val);
             val
         }
@@ -1483,7 +1572,7 @@ pub fn p074() -> String {
     let mut cache = HashMap::new();
     let mut total = 0;
     let goal_num = 60; // for whatever reason
-    for n in 1 .. 1_000_000 {
+    for n in 1..1_000_000 {
         if chain_length(n, &mut cache, &fact) == goal_num {
             total += 1;
         }
@@ -1497,12 +1586,11 @@ pub fn p075() -> String {
     let mut peri_counts = HashMap::new();
 
     let mut m = 1;
-    while 2*m*(m+1) <= l_max {
-
-        let start = 1 + (m%2);
+    while 2 * m * (m + 1) <= l_max {
+        let start = 1 + (m % 2);
         let mut n = start;
 
-        while 2*m*(m+n) <= l_max && n < m {
+        while 2 * m * (m + n) <= l_max && n < m {
             if numerics::gcd(m, n) == 1 {
                 let mut k = 1;
                 loop {
@@ -1527,14 +1615,19 @@ pub fn p075() -> String {
         m += 1;
     }
 
-    peri_counts.into_iter()
+    peri_counts
+        .into_iter()
         .filter_map(|(p, count)| if count == 1 { Some(p) } else { None })
         .count()
         .to_string()
 }
 
 pub fn p076() -> String {
-    fn partitions<'a>(n: u64, part_cap: u64, cache: &'a mut HashMap<(u64, u64), BigInt>) -> &'a BigInt {
+    fn partitions<'a>(
+        n: u64,
+        part_cap: u64,
+        cache: &'a mut HashMap<(u64, u64), BigInt>,
+    ) -> &'a BigInt {
         if n < part_cap {
             return partitions(n, n, cache);
         }
@@ -1543,16 +1636,15 @@ pub fn p076() -> String {
         if cache.contains_key(&key) {
             cache.get(&key).unwrap()
         } else {
-            let val =
-                if n == 0 || n == 1 || part_cap == 1 {
-                    BigInt::from(1)
-                } else {
-                    let mut acc = BigInt::from(0);
-                    for piece in 1 .. part_cap+1 {
-                        acc = &acc + partitions(n - piece, piece, cache);
-                    }
-                    acc
-                };
+            let val = if n == 0 || n == 1 || part_cap == 1 {
+                BigInt::from(1)
+            } else {
+                let mut acc = BigInt::from(0);
+                for piece in 1..part_cap + 1 {
+                    acc = &acc + partitions(n - piece, piece, cache);
+                }
+                acc
+            };
 
             cache.insert(key, val);
             cache.get(&key).unwrap()
@@ -1569,7 +1661,12 @@ pub fn p077() -> String {
 
     let primes = numerics::all_primes(prime_cap);
 
-    fn prime_summations(n: usize, ind_cap: usize, primes: &[usize], cache: &mut HashMap<(usize, usize), usize>) -> usize {
+    fn prime_summations(
+        n: usize,
+        ind_cap: usize,
+        primes: &[usize],
+        cache: &mut HashMap<(usize, usize), usize>,
+    ) -> usize {
         if ind_cap == 0 {
             0
         } else if n == 0 {
@@ -1588,9 +1685,9 @@ pub fn p077() -> String {
             } else {
                 let mut val = 0;
 
-                for i in 0 .. ind_cap {
+                for i in 0..ind_cap {
                     if n >= primes[i] {
-                        val += prime_summations(n - primes[i], i+1, primes, cache);
+                        val += prime_summations(n - primes[i], i + 1, primes, cache);
                     }
                 }
 
@@ -1603,10 +1700,10 @@ pub fn p077() -> String {
     let mut cache = HashMap::new();
     let target = 5_000;
 
-    for n in 2 .. prime_cap {
+    for n in 2..prime_cap {
         let ps = prime_summations(n, primes.len(), &primes, &mut cache);
         if ps >= target {
-            return n.to_string()
+            return n.to_string();
         }
     }
 
@@ -1629,7 +1726,7 @@ pub fn p078() -> String {
             let mut sign_counter = 0;
 
             loop {
-                let pent = k * (3*k - 1) / 2;
+                let pent = k * (3 * k - 1) / 2;
                 if pent > n {
                     break;
                 }
@@ -1637,7 +1734,11 @@ pub fn p078() -> String {
                 total = (total + sign * parts(n - pent, modulus, cache)) % modulus;
 
                 // 1, -1, 2, -2, 3, -3, ...
-                if k > 0 { k = -k; } else { k = 1-k; }
+                if k > 0 {
+                    k = -k;
+                } else {
+                    k = 1 - k;
+                }
 
                 if sign_counter == 0 {
                     sign_counter = 1;
@@ -1656,15 +1757,28 @@ pub fn p078() -> String {
 
     let mut cache = HashMap::new();
 
-    itertools::unfold(0, |state| { *state += 1; Some(*state) })
-        .filter_map(|n| if parts(n, modulus, &mut cache) == 0 { Some(n) } else { None })
-        .next().unwrap().to_string()
+    itertools::unfold(0, |state| {
+        *state += 1;
+        Some(*state)
+    })
+    .filter_map(|n| {
+        if parts(n, modulus, &mut cache) == 0 {
+            Some(n)
+        } else {
+            None
+        }
+    })
+    .next()
+    .unwrap()
+    .to_string()
 }
 
 pub fn p079() -> String {
     let mut text = String::new();
-    File::open("resources/p079.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p079.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
 
     fn next(password: &mut Vec<u8>) {
         let mut i = 0;
@@ -1680,8 +1794,13 @@ pub fn p079() -> String {
         password.push(0);
     }
 
-    let tests = text.lines()
-        .map(|line| line.chars().map(|c| c.to_digit(10).unwrap() as u8).collect::<Vec<u8>>())
+    let tests = text
+        .lines()
+        .map(|line| {
+            line.chars()
+                .map(|c| c.to_digit(10).unwrap() as u8)
+                .collect::<Vec<u8>>()
+        })
         .collect::<Vec<Vec<u8>>>();
 
     fn fits(password: &[u8], test: &[u8]) -> bool {
@@ -1692,7 +1811,7 @@ pub fn p079() -> String {
         }
 
         let mut j = 0;
-        for i in 0 .. password.len() {
+        for i in 0..password.len() {
             if password[i] == test[j] {
                 j += 1;
                 if j >= test.len() {
@@ -1710,8 +1829,10 @@ pub fn p079() -> String {
         next(&mut password);
 
         if tests.iter().all(|test| fits(&password, test)) {
-            return password.iter()
-                .fold(String::new(), |mut s, &d| { s.push_str(&d.to_string()); s });
+            return password.iter().fold(String::new(), |mut s, &d| {
+                s.push_str(&d.to_string());
+                s
+            });
         }
     }
 }
@@ -1740,14 +1861,16 @@ pub fn p080() -> String {
     }
 
     fn digit_sum(n: BigInt) -> usize {
-        n.to_str_radix(10).chars()
+        n.to_str_radix(10)
+            .chars()
             .map(|c| c.to_digit(10).unwrap() as usize)
             .sum::<usize>()
     }
 
-    let squares = (1 .. 11).map(|n| n*n).collect::<HashSet<usize>>();
+    let squares = (1..11).map(|n| n * n).collect::<HashSet<usize>>();
 
-    (1 .. 101).filter(|&n| !squares.contains(&n))
+    (1..101)
+        .filter(|&n| !squares.contains(&n))
         .map(|n| sqrt_ish(n, 99))
         .map(|s| digit_sum(s))
         .sum::<usize>()
@@ -1755,26 +1878,33 @@ pub fn p080() -> String {
 }
 
 pub fn p081() -> String {
-    fn best_path(x: usize, y: usize, cache: &mut HashMap<(usize, usize), u64>, grid: &Vec<Vec<u64>>) -> u64 {
+    fn best_path(
+        x: usize,
+        y: usize,
+        cache: &mut HashMap<(usize, usize), u64>,
+        grid: &Vec<Vec<u64>>,
+    ) -> u64 {
         let key = (x, y);
         if cache.contains_key(&key) {
             *cache.get(&key).unwrap()
         } else {
             let curr = *grid.get(y).unwrap().get(x).unwrap();
-            let val =
-                if y == grid.len() - 1 {
-                    if x == grid.get(y).unwrap().len() - 1 {
-                        curr
-                    } else {
-                        curr + best_path(x+1, y, cache, grid)
-                    }
+            let val = if y == grid.len() - 1 {
+                if x == grid.get(y).unwrap().len() - 1 {
+                    curr
                 } else {
-                    if x == grid.get(y).unwrap().len() - 1 {
-                        curr + best_path(x, y+1, cache, grid)
-                    } else {
-                        curr + min(best_path(x+1, y, cache, grid), best_path(x, y+1, cache, grid))
-                    }
-                };
+                    curr + best_path(x + 1, y, cache, grid)
+                }
+            } else {
+                if x == grid.get(y).unwrap().len() - 1 {
+                    curr + best_path(x, y + 1, cache, grid)
+                } else {
+                    curr + min(
+                        best_path(x + 1, y, cache, grid),
+                        best_path(x, y + 1, cache, grid),
+                    )
+                }
+            };
 
             cache.insert(key, val);
             val
@@ -1782,14 +1912,18 @@ pub fn p081() -> String {
     }
 
     let mut text = String::new();
-    File::open("resources/p081.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p081.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
 
-    let grid: Vec<Vec<u64>> = text.lines()
-        .map(|line|
+    let grid: Vec<Vec<u64>> = text
+        .lines()
+        .map(|line| {
             line.split(",")
                 .map(|token| token.parse::<u64>().expect("Parse error?"))
-                .collect())
+                .collect()
+        })
         .collect();
 
     let mut cache = HashMap::new();
@@ -1805,16 +1939,19 @@ pub fn p082() -> String {
     // TODO -- invent a "rectangular array" class!
 
     let mut text = String::new();
-    File::open("resources/p082.txt").expect("IO Error!")
-        .read_to_string(&mut text).expect("IO Error!");
+    File::open("resources/p082.txt")
+        .expect("IO Error!")
+        .read_to_string(&mut text)
+        .expect("IO Error!");
 
-    let grid: Vec<Vec<BigInt>> =
-        text.lines()
-            .map(|line|
-                line.split(",")
-                    .map(|token| BigInt::from_str(token).expect("Parse error?"))
-                    .collect())
-            .collect();
+    let grid: Vec<Vec<BigInt>> = text
+        .lines()
+        .map(|line| {
+            line.split(",")
+                .map(|token| BigInt::from_str(token).expect("Parse error?"))
+                .collect()
+        })
+        .collect();
 
     let width = grid.get(0).unwrap().len();
     let height = grid.len();
@@ -1822,12 +1959,17 @@ pub fn p082() -> String {
     let mut to_process = BinaryHeap::<RevSortBy<BigInt, (usize, usize)>>::new();
 
     // populate a grid of None for best-per-cell
-    let mut best_by_pos: Vec<Vec<Option<BigInt>>> =
-        grid.iter().map(|row| row.iter().map(|_| None).collect()).collect();
+    let mut best_by_pos: Vec<Vec<Option<BigInt>>> = grid
+        .iter()
+        .map(|row| row.iter().map(|_| None).collect())
+        .collect();
 
     // set up our starting squares
-    for y in 0 .. grid.len() {
-        to_process.push(RevSortBy { cost: (&grid[y][0]).clone(), data: (0, y) });
+    for y in 0..grid.len() {
+        to_process.push(RevSortBy {
+            cost: (&grid[y][0]).clone(),
+            data: (0, y),
+        });
     }
 
     loop {
@@ -1840,34 +1982,43 @@ pub fn p082() -> String {
             return path.cost.to_string();
         } else {
             // could move right
-            let right_pos = (x+1, y);
-            let right_cost = &path.cost + &grid[y][x+1];
+            let right_pos = (x + 1, y);
+            let right_cost = &path.cost + &grid[y][x + 1];
 
-            if new_better(&right_cost, &best_by_pos[y][x+1]) {
-                best_by_pos[y][x+1] = Some(right_cost.clone());
-                to_process.push(RevSortBy{ cost: right_cost, data: right_pos });
+            if new_better(&right_cost, &best_by_pos[y][x + 1]) {
+                best_by_pos[y][x + 1] = Some(right_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: right_cost,
+                    data: right_pos,
+                });
             }
         }
 
         if y > 0 {
             // then up is possible
-            let up_pos = (x, y-1);
-            let up_cost = &path.cost + &grid[y-1][x];
+            let up_pos = (x, y - 1);
+            let up_cost = &path.cost + &grid[y - 1][x];
 
-            if new_better(&up_cost, &best_by_pos[y-1][x]) {
-                best_by_pos[y-1][x] = Some(up_cost.clone());
-                to_process.push(RevSortBy{ cost: up_cost, data: up_pos });
+            if new_better(&up_cost, &best_by_pos[y - 1][x]) {
+                best_by_pos[y - 1][x] = Some(up_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: up_cost,
+                    data: up_pos,
+                });
             }
         }
 
         if y < height - 1 {
             // then down is possible
-            let down_pos = (x, y+1);
-            let down_cost = &path.cost + &grid[y+1][x];
+            let down_pos = (x, y + 1);
+            let down_cost = &path.cost + &grid[y + 1][x];
 
-            if new_better(&down_cost, &best_by_pos[y+1][x]) {
-                best_by_pos[y+1][x] = Some(down_cost.clone());
-                to_process.push(RevSortBy{ cost: down_cost, data: down_pos });
+            if new_better(&down_cost, &best_by_pos[y + 1][x]) {
+                best_by_pos[y + 1][x] = Some(down_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: down_cost,
+                    data: down_pos,
+                });
             }
         }
     }
@@ -1881,16 +2032,19 @@ pub fn p083() -> String {
     // TODO -- invent a "rectangular array" class!
 
     let mut text = String::new();
-    File::open("resources/p083.txt").expect("IO Error!")
-        .read_to_string(&mut text).expect("IO Error!");
+    File::open("resources/p083.txt")
+        .expect("IO Error!")
+        .read_to_string(&mut text)
+        .expect("IO Error!");
 
-    let grid: Vec<Vec<BigInt>> =
-        text.lines()
-            .map(|line|
-                line.split(",")
-                    .map(|token| BigInt::from_str(token).expect("Parse error?"))
-                    .collect())
-            .collect();
+    let grid: Vec<Vec<BigInt>> = text
+        .lines()
+        .map(|line| {
+            line.split(",")
+                .map(|token| BigInt::from_str(token).expect("Parse error?"))
+                .collect()
+        })
+        .collect();
 
     let width = grid.get(0).unwrap().len();
     let height = grid.len();
@@ -1898,11 +2052,16 @@ pub fn p083() -> String {
     let mut to_process = BinaryHeap::<RevSortBy<BigInt, (usize, usize)>>::new();
 
     // populate a grid of None for best-per-cell
-    let mut best_by_pos: Vec<Vec<Option<BigInt>>> =
-        grid.iter().map(|row| row.iter().map(|_| None).collect()).collect();
+    let mut best_by_pos: Vec<Vec<Option<BigInt>>> = grid
+        .iter()
+        .map(|row| row.iter().map(|_| None).collect())
+        .collect();
 
     // set up our starting squares
-    to_process.push(RevSortBy{ cost: grid[0][0].clone(), data: (0, 0) });
+    to_process.push(RevSortBy {
+        cost: grid[0][0].clone(),
+        data: (0, 0),
+    });
 
     loop {
         let path = to_process.pop().expect("Right side is unreachable???");
@@ -1915,45 +2074,57 @@ pub fn p083() -> String {
 
         if x < width - 1 {
             // could move right
-            let right_pos = (x+1, y);
-            let right_cost = &path.cost + &grid[y][x+1];
+            let right_pos = (x + 1, y);
+            let right_cost = &path.cost + &grid[y][x + 1];
 
-            if new_better(&right_cost, &best_by_pos[y][x+1]) {
-                best_by_pos[y][x+1] = Some(right_cost.clone());
-                to_process.push(RevSortBy{ cost: right_cost, data: right_pos });
+            if new_better(&right_cost, &best_by_pos[y][x + 1]) {
+                best_by_pos[y][x + 1] = Some(right_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: right_cost,
+                    data: right_pos,
+                });
             }
         }
 
         if x > 0 {
             // could move left
-            let left_pos = (x-1, y);
-            let left_cost = &path.cost + &grid[y][x-1];
+            let left_pos = (x - 1, y);
+            let left_cost = &path.cost + &grid[y][x - 1];
 
-            if new_better(&left_cost, &best_by_pos[y][x-1]) {
-                best_by_pos[y][x-1] = Some(left_cost.clone());
-                to_process.push(RevSortBy{ cost: left_cost, data: left_pos });
+            if new_better(&left_cost, &best_by_pos[y][x - 1]) {
+                best_by_pos[y][x - 1] = Some(left_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: left_cost,
+                    data: left_pos,
+                });
             }
         }
 
         if y > 0 {
             // then up is possible
-            let up_pos = (x, y-1);
-            let up_cost = &path.cost + &grid[y-1][x];
+            let up_pos = (x, y - 1);
+            let up_cost = &path.cost + &grid[y - 1][x];
 
-            if new_better(&up_cost, &best_by_pos[y-1][x]) {
-                best_by_pos[y-1][x] = Some(up_cost.clone());
-                to_process.push(RevSortBy{ cost: up_cost, data: up_pos });
+            if new_better(&up_cost, &best_by_pos[y - 1][x]) {
+                best_by_pos[y - 1][x] = Some(up_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: up_cost,
+                    data: up_pos,
+                });
             }
         }
 
         if y < height - 1 {
             // then down is possible
-            let down_pos = (x, y+1);
-            let down_cost = &path.cost + &grid[y+1][x];
+            let down_pos = (x, y + 1);
+            let down_cost = &path.cost + &grid[y + 1][x];
 
-            if new_better(&down_cost, &best_by_pos[y+1][x]) {
-                best_by_pos[y+1][x] = Some(down_cost.clone());
-                to_process.push(RevSortBy{ cost: down_cost, data: down_pos });
+            if new_better(&down_cost, &best_by_pos[y + 1][x]) {
+                best_by_pos[y + 1][x] = Some(down_cost.clone());
+                to_process.push(RevSortBy {
+                    cost: down_cost,
+                    data: down_pos,
+                });
             }
         }
     }
@@ -1961,7 +2132,6 @@ pub fn p083() -> String {
 
 pub fn p084() -> String {
     use std::ops::Deref;
-    use std;
 
     struct State([f64; 40]);
 
@@ -1985,11 +2155,11 @@ pub fn p084() -> String {
         // first time
         let mut next_state = start_state.clone();
         let mut first_double_probs = [0.0; 40];
-        for start in 0 .. 40 {
+        for start in 0..40 {
             let to_prob = start_state[start] * roll_prob;
 
-            for a in 1 .. dice_size+1 {
-                for b in 1 .. dice_size+1 {
+            for a in 1..dice_size + 1 {
+                for b in 1..dice_size + 1 {
                     let to_ind = add_board(start, a + b);
 
                     if a == b {
@@ -2006,11 +2176,11 @@ pub fn p084() -> String {
         next_state = start_state.clone();
 
         let mut second_double_probs = [0.0; 40];
-        for start in 0 .. 40 {
+        for start in 0..40 {
             let to_prob = first_double_probs[start] * roll_prob;
 
-            for a in 1 .. dice_size+1 {
-                for b in 1 .. dice_size+1 {
+            for a in 1..dice_size + 1 {
+                for b in 1..dice_size + 1 {
                     let to_ind = add_board(start, a + b);
 
                     if a == b {
@@ -2026,11 +2196,11 @@ pub fn p084() -> String {
         start_state = next_state;
         next_state = start_state.clone();
 
-        for start in 0 .. 40 {
+        for start in 0..40 {
             let to_prob = second_double_probs[start] * roll_prob;
 
-            for a in 1 .. dice_size+1 {
-                for b in 1 .. dice_size+1 {
+            for a in 1..dice_size + 1 {
+                for b in 1..dice_size + 1 {
                     let to_ind = add_board(start, a + b);
 
                     if a == b {
@@ -2047,7 +2217,10 @@ pub fn p084() -> String {
 
     fn move_prob(state: &mut [f64; 40], from_ind: usize, to_ind: usize, mut amt: f64) {
         if state[from_ind] < amt - 0.000000001 {
-            panic!("Cannot move {} from index {}, since it only has {} in it!", amt, from_ind, state[from_ind])
+            panic!(
+                "Cannot move {} from index {}, since it only has {} in it!",
+                amt, from_ind, state[from_ind]
+            )
         }
 
         if amt > state[from_ind] {
@@ -2081,7 +2254,7 @@ pub fn p084() -> String {
                 7 => 15,
                 22 => 25,
                 36 => 5,
-                _ => cannot_happen()
+                _ => cannot_happen(),
             };
             move_prob(&mut state, i, next_r, 2.0 * card_prob); // go to next railroad
 
@@ -2089,7 +2262,7 @@ pub fn p084() -> String {
                 7 => 12,
                 22 => 28,
                 36 => 12,
-                _ => cannot_happen()
+                _ => cannot_happen(),
             };
             move_prob(&mut state, i, next_u, card_prob); // go to next utility
 
@@ -2118,25 +2291,25 @@ pub fn p084() -> String {
     arr[0] = 1.0; // start at GO
     let mut state = State(arr);
 
-    for _ in 0 .. 40_000 {
+    for _ in 0..40_000 {
         state = next(state, 4);
     }
 
-    let mut inds: Vec<_> = (0 .. 40).collect();
+    let mut inds: Vec<_> = (0..40).collect();
     inds.sort_by(|&a, &b| {
         // note: order reversed
-        (state[b]).partial_cmp(&state[a]).unwrap_or(std::cmp::Ordering::Equal)
+        (state[b])
+            .partial_cmp(&state[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
     });
 
-    inds.into_iter()
-        .take(3)
-        .fold(String::new(), |mut acc, i| {
-            if i < 10 {
-                acc.push_str("0");
-            }
-            acc.push_str(&i.to_string());
-            acc
-        })
+    inds.into_iter().take(3).fold(String::new(), |mut acc, i| {
+        if i < 10 {
+            acc.push_str("0");
+        }
+        acc.push_str(&i.to_string());
+        acc
+    })
 }
 
 pub fn p085() -> String {
@@ -2164,12 +2337,15 @@ pub fn p085() -> String {
     let mut best_nr: i64 = 0;
     let mut best_area: i64 = 0;
 
-    for width in itertools::unfold(0, |state| { *state += 1; Some(*state) }) {
+    for width in itertools::unfold(0, |state| {
+        *state += 1;
+        Some(*state)
+    }) {
         if num_rects(width, 1, &mut cache) > cap * 2 {
             break;
         }
 
-        for height in 1 .. width+1 {
+        for height in 1..width + 1 {
             let nr = num_rects(width, height, &mut cache);
 
             if nr > cap * 2 {
@@ -2187,19 +2363,19 @@ pub fn p085() -> String {
 pub fn p086() -> String {
     fn shortest_path(a: u64, b: u64, c: u64) -> u64 {
         // really the square of the shortest path
-        a*a + b*b + c*c + 2*(min(a*b, min(a*c, b*c)))
+        a * a + b * b + c * c + 2 * (min(a * b, min(a * c, b * c)))
     }
 
     let m_cap = 10_000; // just needs to be big enough (but think about overflow ~3*m_cap**2)
     let goal = 1_000_000;
 
-    let squares: HashSet<u64> = (1 .. 3*m_cap+1).map(|k| k*k).collect();
+    let squares: HashSet<u64> = (1..3 * m_cap + 1).map(|k| k * k).collect();
 
     let mut total = 0;
 
-    for a in 1 .. m_cap+1 {
-        for b in 1 .. a+1 {
-            for c in 1 .. b+1 {
+    for a in 1..m_cap + 1 {
+        for b in 1..a + 1 {
+            for c in 1..b + 1 {
                 if squares.contains(&shortest_path(a, b, c)) {
                     total += 1;
                 }
@@ -2222,9 +2398,17 @@ pub fn p087() -> String {
 
     let mut found = HashSet::new();
 
-    for asq in primes.iter().map(|&a| a*a).take_while(|&asq| asq < cap) {
-        for cub in primes.iter().map(|&b| pow(b, 3) + asq).take_while(|&cub| cub < cap) {
-            for total in primes.iter().map(|&c| pow(c, 4) + cub).take_while(|&total| total < cap) {
+    for asq in primes.iter().map(|&a| a * a).take_while(|&asq| asq < cap) {
+        for cub in primes
+            .iter()
+            .map(|&b| pow(b, 3) + asq)
+            .take_while(|&cub| cub < cap)
+        {
+            for total in primes
+                .iter()
+                .map(|&c| pow(c, 4) + cub)
+                .take_while(|&total| total < cap)
+            {
                 found.insert(total);
             }
         }
@@ -2239,12 +2423,17 @@ pub fn p088() -> String {
         sum: u64,
         prod: u64,
         k: u64,
-        max_next: u64
+        max_next: u64,
     }
 
     impl PartialAnswer {
         fn from_start(start: u64) -> PartialAnswer {
-            PartialAnswer { sum: start, prod: start, k: 1, max_next: start }
+            PartialAnswer {
+                sum: start,
+                prod: start,
+                k: 1,
+                max_next: start,
+            }
         }
 
         fn next(&self, next: u64) -> PartialAnswer {
@@ -2255,7 +2444,7 @@ pub fn p088() -> String {
                 sum: self.sum + next,
                 prod: self.prod * next,
                 k: self.k + 1,
-                max_next: next
+                max_next: next,
             }
         }
 
@@ -2268,7 +2457,7 @@ pub fn p088() -> String {
                 sum: self.prod,
                 prod: self.prod,
                 k: self.k + self.prod - self.sum,
-                max_next: 1
+                max_next: 1,
             }
         }
 
@@ -2282,7 +2471,7 @@ pub fn p088() -> String {
     let cap = 12_000;
 
     let mut queue = Vec::new();
-    for n in 2 .. cap+1 {
+    for n in 2..cap + 1 {
         let next = PartialAnswer::from_start(n);
         if next.least_finishing_k() < cap {
             queue.push(next);
@@ -2306,7 +2495,7 @@ pub fn p088() -> String {
             }
         }
 
-        for i in 2 .. to_process.max_next+1 {
+        for i in 2..to_process.max_next + 1 {
             let next = to_process.next(i);
             if next.least_finishing_k() <= cap {
                 queue.push(next);
@@ -2317,24 +2506,43 @@ pub fn p088() -> String {
     println!("Saw a total of {} queue elements.", seen);
 
     best.values()
-        .fold(HashSet::new(), |mut acc, &n| { acc.insert(n); acc })
-        .iter().fold(0, |acc, &n| acc + n)
+        .fold(HashSet::new(), |mut acc, &n| {
+            acc.insert(n);
+            acc
+        })
+        .iter()
+        .fold(0, |acc, &n| acc + n)
         .to_string()
 }
 
 pub fn p089() -> String {
     let mut text = String::new();
-    File::open("resources/p089.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p089.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
     let old_romans: Vec<String> = text.lines().map(|s| s.to_string()).collect();
 
     let min_denoms = vec![
-        (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"),
-        (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"),
-        (5, "V"), (4, "IV"), (1, "I")];
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    ];
 
-    let min_den_chars: Vec<_> = min_denoms.iter()
-        .map(|&(ref c, ref s)| (*c, s.chars().collect::<Vec<char>>())).collect();
+    let min_den_chars: Vec<_> = min_denoms
+        .iter()
+        .map(|&(ref c, ref s)| (*c, s.chars().collect::<Vec<char>>()))
+        .collect();
 
     fn min_roman(mut n: u64, denoms: &[(u64, &str)]) -> String {
         let mut out = String::new();
@@ -2350,7 +2558,7 @@ pub fn p089() -> String {
     }
 
     fn starts_with(s: &[char], c: &[char]) -> bool {
-        s.len() >= c.len() && (0 .. c.len()).all(|i| s[i] == c[i])
+        s.len() >= c.len() && (0..c.len()).all(|i| s[i] == c[i])
     }
 
     fn to_num(mut roman: &[char], min_den_chars: &Vec<(u64, Vec<char>)>) -> u64 {
@@ -2366,7 +2574,11 @@ pub fn p089() -> String {
         total
     }
 
-    fn improvement(old_roman: &str, denoms: &[(u64, &str)], min_den_chars: &Vec<(u64, Vec<char>)>) -> usize {
+    fn improvement(
+        old_roman: &str,
+        denoms: &[(u64, &str)],
+        min_den_chars: &Vec<(u64, Vec<char>)>,
+    ) -> usize {
         let num = to_num(&old_roman.chars().collect::<Vec<char>>(), min_den_chars);
         let fixed = min_roman(num, denoms);
         let savings = old_roman.chars().count() - fixed.chars().count();
@@ -2374,7 +2586,11 @@ pub fn p089() -> String {
         savings
     }
 
-    old_romans.iter().map(|s| improvement(s, &min_denoms, &min_den_chars)).sum::<usize>().to_string()
+    old_romans
+        .iter()
+        .map(|s| improvement(s, &min_denoms, &min_den_chars))
+        .sum::<usize>()
+        .to_string()
 }
 
 pub fn p090() -> String {
@@ -2407,7 +2623,7 @@ pub fn p090() -> String {
 
     impl Ord for Cube {
         fn cmp(&self, other: &Cube) -> Ordering {
-            for i in 0 .. 10 {
+            for i in 0..10 {
                 if self.digits.contains(&i) {
                     if !other.digits.contains(&i) {
                         return Ordering::Less;
@@ -2433,13 +2649,23 @@ pub fn p090() -> String {
         right: &'a Cube,
     }
 
-    impl <'a> Pair<'a> {
+    impl<'a> Pair<'a> {
         fn works(&self) -> bool {
             fn rev((x, y): (u32, u32)) -> (u32, u32) {
                 (y, x)
             }
 
-            for pair in vec![(0, 1), (0, 4), (0, 9), (1, 6), (2, 5), (3, 6), (4, 9), (6, 4), (8, 1)] {
+            for pair in vec![
+                (0, 1),
+                (0, 4),
+                (0, 9),
+                (1, 6),
+                (2, 5),
+                (3, 6),
+                (4, 9),
+                (6, 4),
+                (8, 1),
+            ] {
                 if !self.can_fit(pair) && !self.can_fit(rev(pair)) {
                     return false;
                 }
@@ -2456,12 +2682,12 @@ pub fn p090() -> String {
     let all_cubes = {
         let mut cubes = Vec::with_capacity(210);
 
-        for a in 0 .. 10 {
-            for b in a+1 .. 10 {
-                for c in b+1 .. 10 {
-                    for d in c+1 .. 10 {
-                        for e in d+1 .. 10 {
-                            for f in e+1 .. 10 {
+        for a in 0..10 {
+            for b in a + 1..10 {
+                for c in b + 1..10 {
+                    for d in c + 1..10 {
+                        for e in d + 1..10 {
+                            for f in e + 1..10 {
                                 cubes.push(Cube::new(a, b, c, d, e, f));
                             }
                         }
@@ -2498,16 +2724,12 @@ pub fn p091() -> String {
 
     // we could be way smarter but cap is really small, so we can be dumb
     // assume (x1,y1) is the major vertex
-    for x1 in 0 .. cap+1 {
-        let start1 =
-            if x1 == 0 { 1 } else { 0 };
-        for y1 in start1 .. cap+1 {
-
-            for x2 in 0 .. cap+1 {
-                let start2 =
-                    if x2 == 0 { 1 } else { 0 };
-                for y2 in start2 .. cap+1 {
-
+    for x1 in 0..cap + 1 {
+        let start1 = if x1 == 0 { 1 } else { 0 };
+        for y1 in start1..cap + 1 {
+            for x2 in 0..cap + 1 {
+                let start2 = if x2 == 0 { 1 } else { 0 };
+                for y2 in start2..cap + 1 {
                     if x1 == x2 && y1 == y2 {
                         continue;
                     }
@@ -2549,7 +2771,10 @@ pub fn p092() -> String {
 
     let mut cache = HashMap::new();
 
-    (1 .. 10_000_000).filter(|&n| to_89(n, &mut cache)).count().to_string()
+    (1..10_000_000)
+        .filter(|&n| to_89(n, &mut cache))
+        .count()
+        .to_string()
 }
 
 pub fn p093() -> String {
@@ -2570,7 +2795,10 @@ pub fn p093() -> String {
                 d = -d;
             }
             let g = numerics::gcd(n, d);
-            Rational { num: n/g, den: d/g }
+            Rational {
+                num: n / g,
+                den: d / g,
+            }
         }
 
         fn ok(n: i64) -> MaybeFrac {
@@ -2635,7 +2863,13 @@ pub fn p093() -> String {
     //        (a * c) * (b * d)
     //        (a * (b * c)) * d
     //        ((a * b) * c) * d
-    enum Form { A, B, C, D, E }
+    enum Form {
+        A,
+        B,
+        C,
+        D,
+        E,
+    }
 
     impl Form {
         fn forms() -> Vec<Form> {
@@ -2643,7 +2877,11 @@ pub fn p093() -> String {
         }
     }
 
-    fn apply(nums: &Vec<MaybeFrac>, (ref f, ref g, ref h): (&Op, &Op, &Op), form: Form) -> MaybeFrac {
+    fn apply(
+        nums: &Vec<MaybeFrac>,
+        (ref f, ref g, ref h): (&Op, &Op, &Op),
+        form: Form,
+    ) -> MaybeFrac {
         match form {
             Form::A => f(nums[0], g(nums[1], h(nums[2], nums[3]))),
             Form::B => f(nums[0], g(h(nums[1], nums[2]), nums[3])),
@@ -2682,7 +2920,7 @@ pub fn p093() -> String {
 
     fn all_results(v: &Vec<MaybeFrac>, triples: &Vec<(&Op, &Op, &Op)>) -> i64 {
         let mut set = HashSet::new();
-        for i in 0 .. 24 {
+        for i in 0..24 {
             let perm = toys::nth_permutation(v, i).iter().map(|&&n| n).collect();
             for triple in triples {
                 for form in Form::forms() {
@@ -2699,11 +2937,16 @@ pub fn p093() -> String {
 
     let mut best_str = 0;
     let mut best = -1;
-    for a in 0 .. 10 {
-        for b in a+1 .. 10 {
-            for c in b+1 .. 10 {
-                for d in c+1 .. 10 {
-                    let digits = vec![Rational::ok(a), Rational::ok(b), Rational::ok(c), Rational::ok(d)];
+    for a in 0..10 {
+        for b in a + 1..10 {
+            for c in b + 1..10 {
+                for d in c + 1..10 {
+                    let digits = vec![
+                        Rational::ok(a),
+                        Rational::ok(b),
+                        Rational::ok(c),
+                        Rational::ok(d),
+                    ];
                     let res = all_results(&digits, triples);
                     if res > best {
                         best = res;
@@ -2724,21 +2967,21 @@ pub fn p094() -> String {
 
     let mut m: i64 = 1;
 
-    while 2*m*m + 2*m <= cap {
-        let mut n = 1 + (m%2);
+    while 2 * m * m + 2 * m <= cap {
+        let mut n = 1 + (m % 2);
 
-        while n < m && 2*m*m + 2*m*n <= cap {
+        while n < m && 2 * m * m + 2 * m * n <= cap {
             // no need to check gcd because if it's not primitive it'll just fail
-            let a = m*m - n*n;
-            let b = 2*m*n;
-            let c = m*m + n*n;
+            let a = m * m - n * n;
+            let b = 2 * m * n;
+            let c = m * m + n * n;
 
             let side = min(a, b);
             let diff = c - 2 * side;
 
             if diff == 1 || diff == -1 {
                 println!("Victory: {} {} {}", a, b, c);
-                total_perimeter += 2*(side + c);
+                total_perimeter += 2 * (side + c);
             }
 
             n += 2;
@@ -2784,13 +3027,16 @@ pub fn p095() -> String {
 
     let cap = 1_000_000;
 
-    let all_sd = numerics::all_sum_divisors(cap).into_iter()
-        .enumerate().map(|(n, t)| t-n).collect::<Vec<usize>>();
+    let all_sd = numerics::all_sum_divisors(cap)
+        .into_iter()
+        .enumerate()
+        .map(|(n, t)| t - n)
+        .collect::<Vec<usize>>();
 
     let mut min = cap + 1;
     let mut max_cycle = 0;
 
-    for n in 0 .. cap {
+    for n in 0..cap {
         if let Some(length) = cycle_length(n, cap, &all_sd) {
             if length > max_cycle {
                 max_cycle = length;
@@ -2808,7 +3054,7 @@ pub fn p096() -> String {
     #[derive(Debug, Clone)]
     struct Board {
         data: [[Option<u32>; 9]; 9],
-        poss: Vec<Vec<HashSet<u32>>>
+        poss: Vec<Vec<HashSet<u32>>>,
     }
 
     impl Board {
@@ -2824,15 +3070,15 @@ pub fn p096() -> String {
             } else if self.is_inconsistent() {
                 return Err(());
             } else {
-                for y in 0 .. 9 {
-                    for x in 0 .. 9 {
+                for y in 0..9 {
+                    for x in 0..9 {
                         if self.data[y][x].is_none() {
                             for &p in self.poss[y][x].iter() {
                                 let mut maybe = self.clone();
                                 maybe.data[y][x] = Some(p);
                                 maybe.poss[y][x].retain(|&n| n == p);
                                 if let Ok(board) = maybe.solve() {
-                                    return Ok(board)
+                                    return Ok(board);
                                 }
                             }
                             // If we got this far then no option was correct, which means we were
@@ -2869,7 +3115,7 @@ pub fn p096() -> String {
                 return None;
             } else {
                 let mut data = [[None; 9]; 9];
-                for row in 0 .. 9 {
+                for row in 0..9 {
                     for (col, c) in lines[row].chars().enumerate() {
                         data[row][col] = Some(c.to_digit(10).unwrap());
                         if data[row][col] == Some(0) {
@@ -2890,12 +3136,12 @@ pub fn p096() -> String {
         }
 
         fn init_known(&mut self) {
-            for row in 0 .. 9 {
-                for col in 0 .. 9 {
+            for row in 0..9 {
+                for col in 0..9 {
                     if let Some(n) = self.data[row][col] {
                         self.poss[row][col].insert(n);
                     } else {
-                        for i in 1 .. 10 {
+                        for i in 1..10 {
                             self.poss[row][col].insert(i);
                         }
                     }
@@ -2905,9 +3151,9 @@ pub fn p096() -> String {
 
         fn rows() -> Vec<Vec<(usize, usize)>> {
             let mut out = Vec::with_capacity(9);
-            for row in 0 .. 9 {
+            for row in 0..9 {
                 let mut r = Vec::with_capacity(9);
-                for col in 0 .. 9 {
+                for col in 0..9 {
                     r.push((row, col));
                 }
                 out.push(r);
@@ -2917,9 +3163,9 @@ pub fn p096() -> String {
 
         fn cols() -> Vec<Vec<(usize, usize)>> {
             let mut out = Vec::with_capacity(9);
-            for col in 0 .. 9 {
+            for col in 0..9 {
                 let mut c = Vec::with_capacity(9);
-                for row in 0 .. 9 {
+                for row in 0..9 {
                     c.push((row, col));
                 }
                 out.push(c);
@@ -2932,8 +3178,8 @@ pub fn p096() -> String {
             for cx in vec![0, 3, 6] {
                 for cy in vec![0, 3, 6] {
                     let mut g = Vec::with_capacity(9);
-                    for row in cy .. cy+3 {
-                        for col in cx .. cx+3 {
+                    for row in cy..cy + 3 {
+                        for col in cx..cx + 3 {
                             g.push((row, col));
                         }
                     }
@@ -2994,7 +3240,11 @@ pub fn p096() -> String {
                     }
                 }
                 for &(y, x) in cell.iter() {
-                    let onlys: Vec<u32> = self.poss[y][x].iter().filter(|n| counts.get(n) == Some(&1)).map(|&n| n).collect();
+                    let onlys: Vec<u32> = self.poss[y][x]
+                        .iter()
+                        .filter(|n| counts.get(n) == Some(&1))
+                        .map(|&n| n)
+                        .collect();
                     if onlys.len() > 1 {
                         changes += self.poss[y][x].len();
                         self.poss[y][x].clear();
@@ -3011,8 +3261,8 @@ pub fn p096() -> String {
         fn singletons(&mut self) -> usize {
             let mut changes = 0;
 
-            for col in 0 .. 9 {
-                for row in 0 .. 9 {
+            for col in 0..9 {
+                for row in 0..9 {
                     if self.data[row][col].is_none() && self.poss[row][col].len() == 1 {
                         self.data[row][col] = Some(*self.poss[row][col].iter().next().unwrap());
                         changes += 1;
@@ -3033,8 +3283,8 @@ pub fn p096() -> String {
         }
 
         fn is_done(&self) -> bool {
-            for row in 0 .. 9 {
-                for col in 0 .. 9 {
+            for row in 0..9 {
+                for col in 0..9 {
                     if self.data[row][col].is_none() {
                         return false;
                     }
@@ -3044,8 +3294,8 @@ pub fn p096() -> String {
         }
 
         fn is_inconsistent(&self) -> bool {
-            for row in 0 .. 9 {
-                for col in 0 .. 9 {
+            for row in 0..9 {
+                for col in 0..9 {
                     if self.poss[row][col].len() == 0 {
                         return true;
                     }
@@ -3056,10 +3306,14 @@ pub fn p096() -> String {
     }
 
     let mut text = String::new();
-    File::open("resources/p096.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p096.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
 
-    let boards: Vec<Board> = text.lines().collect::<Vec<&str>>()
+    let boards: Vec<Board> = text
+        .lines()
+        .collect::<Vec<&str>>()
         .chunks(10)
         .map(|chunk| chunk.iter().skip(1).collect::<Vec<&&str>>())
         .filter_map(Board::from)
@@ -3068,7 +3322,9 @@ pub fn p096() -> String {
     let mut total = 0;
     for board in boards.iter() {
         let board = board.clone().solve().unwrap();
-        total += board.data[0][0].unwrap() * 100 + board.data[0][1].unwrap() * 10 + board.data[0][2].unwrap();
+        total += board.data[0][0].unwrap() * 100
+            + board.data[0][1].unwrap() * 10
+            + board.data[0][2].unwrap();
     }
     total.to_string()
 }
@@ -3087,7 +3343,7 @@ pub fn p098() -> String {
     #[derive(Debug)]
     struct Word {
         chars: Vec<char>,
-        counts: HashMap<char, usize>
+        counts: HashMap<char, usize>,
     }
 
     impl Word {
@@ -3119,14 +3375,14 @@ pub fn p098() -> String {
 
         while nsq < nsq_min {
             n += 1;
-            nsq = n*n;
+            nsq = n * n;
         }
         while nsq <= nsq_max {
             if maps_to(w, nsq) {
                 out.push(nsq);
             }
             n += 1;
-            nsq = n*n;
+            nsq = n * n;
         }
         out
     }
@@ -3173,7 +3429,7 @@ pub fn p098() -> String {
         // not fast
         let mut i = 0;
         loop {
-            let isq = i*i;
+            let isq = i * i;
             if isq < n {
                 i += 1;
             } else if isq == n {
@@ -3204,7 +3460,7 @@ pub fn p098() -> String {
         }
 
         let mut n = 0;
-        for i in 0 .. w2.len() {
+        for i in 0..w2.len() {
             n = 10 * n + *let_dig.get(&w2[i]).unwrap();
         }
 
@@ -3213,17 +3469,20 @@ pub fn p098() -> String {
 
     let mut text = String::new();
 
-    File::open("resources/p098.txt").expect("IO Error?")
-        .read_to_string(&mut text).expect("IO Error?");
+    File::open("resources/p098.txt")
+        .expect("IO Error?")
+        .read_to_string(&mut text)
+        .expect("IO Error?");
 
-    let words: Vec<Word> = text.split(",")
+    let words: Vec<Word> = text
+        .split(",")
         .map(|s| s.chars().filter(|&c| c != '"').collect::<Vec<char>>())
         .map(|v| Word::from(v))
         .collect();
 
     let mut best = 0;
     for (i, ref w1) in words.iter().enumerate() {
-        for w2 in &(words[i+1..]) {
+        for w2 in &(words[i + 1..]) {
             if w1.counts != w2.counts {
                 continue;
             }
@@ -3248,8 +3507,10 @@ pub fn p099() -> String {
 
     let mut text = String::new();
 
-    File::open("resources/p099.txt").expect("IO Error")
-        .read_to_string(&mut text).expect("IO Error");
+    File::open("resources/p099.txt")
+        .expect("IO Error")
+        .read_to_string(&mut text)
+        .expect("IO Error");
 
     let mut best: Option<(f64, f64)> = None;
     let mut best_ind = None;
@@ -3266,7 +3527,7 @@ pub fn p099() -> String {
         }
     }
 
-    (best_ind.unwrap()+1).to_string()
+    (best_ind.unwrap() + 1).to_string()
 }
 
 pub fn p100() -> String {
@@ -3285,7 +3546,7 @@ pub fn p100() -> String {
         x = &three * &old_x + &four * &old_y;
         y = &two * &old_x + &three * &old_y;
 
-        let (a, b) = (&(&y+&one)/&two, &(&x+&one)/&two);
+        let (a, b) = (&(&y + &one) / &two, &(&x + &one) / &two);
 
         if b > cap {
             return a.to_string();

@@ -1,8 +1,6 @@
-use std::collections::{HashSet};
+use std::collections::HashSet;
 
-use euler_lib::numerics::{gcd};
-
-
+use euler_lib::numerics::gcd;
 
 pub fn p504() -> String {
     let m: i64 = 100;
@@ -23,15 +21,15 @@ pub fn p504() -> String {
     };
 
     let mut counter = 0;
-    for a in 1 .. m+1 {
-        for b in 1 .. m+1 {
+    for a in 1..m + 1 {
+        for b in 1..m + 1 {
             let gcd_ab = gcd(a, b);
 
-            for c in 1 .. m+1 {
+            for c in 1..m + 1 {
                 let gcd_bc = gcd(b, c);
 
-                for d in 1 .. m+1 {
-                    let area = (a*b + b*c + c*d + d*a) / 2;
+                for d in 1..m + 1 {
+                    let area = (a * b + b * c + c * d + d * a) / 2;
                     let num_bdry = gcd_ab + gcd_bc + gcd(c, d) + gcd(d, a);
                     let num_int = area + 1 - (num_bdry / 2);
 
@@ -46,8 +44,6 @@ pub fn p504() -> String {
     return counter.to_string();
 }
 
-
-
 pub fn p523() -> String {
     let n = 30;
 
@@ -56,9 +52,9 @@ pub fn p523() -> String {
             return 0.0;
         }
 
-        let swap_back = (1 << (n-1)) - 1;
+        let swap_back = (1 << (n - 1)) - 1;
 
-        (swap_back as f64) / (n as f64) + exp(n-1)
+        (swap_back as f64) / (n as f64) + exp(n - 1)
     }
 
     exp(n).to_string()

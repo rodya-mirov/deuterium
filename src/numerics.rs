@@ -1,42 +1,47 @@
 extern crate num;
-use num::{One, Zero, BigInt, BigUint, pow};
+use num::{pow, BigInt, BigUint, One, Zero};
 
+use super::iterators::ForeverRange;
+
+use itertools;
+use prelude::cannot_happen;
 use std::cmp::Ord;
 use std::fmt;
-use std::ops::{Mul, Rem, ShrAssign, BitAnd};
-use std::iter::{Iterator};
-use super::iterators::ForeverRange;
-use prelude::cannot_happen;
-use itertools;
-
+use std::iter::Iterator;
+use std::ops::{BitAnd, Mul, Rem, ShrAssign};
 pub enum PossiblePrimesState {
-    Two, Three, TailOne, TailFive
+    Two,
+    Three,
+    TailOne,
+    TailFive,
 }
 
 pub struct PossiblePrimes {
     state: PossiblePrimesState,
-    offset: BigInt
+    offset: BigInt,
 }
 
-impl PossiblePrimes {
-}
+impl PossiblePrimes {}
 
 impl Iterator for PossiblePrimes {
     type Item = BigInt;
 
     fn next(&mut self) -> Option<BigInt> {
         let (next_state, output) = match self.state {
-            PossiblePrimesState::Two =>
-                (PossiblePrimesState::Three, BigInt::from(2)),
+            PossiblePrimesState::Two => (PossiblePrimesState::Three, BigInt::from(2)),
 
-            PossiblePrimesState::Three =>
-                (PossiblePrimesState::TailFive, BigInt::from(3)),
+            PossiblePrimesState::Three => (PossiblePrimesState::TailFive, BigInt::from(3)),
 
-            PossiblePrimesState::TailOne =>
-                (PossiblePrimesState::TailFive, &self.offset + &BigInt::from(1)),
+            PossiblePrimesState::TailOne => (
+                PossiblePrimesState::TailFive,
+                &self.offset + &BigInt::from(1),
+            ),
 
             PossiblePrimesState::TailFive => {
-                let ret = (PossiblePrimesState::TailOne, &self.offset + &BigInt::from(5));
+                let ret = (
+                    PossiblePrimesState::TailOne,
+                    &self.offset + &BigInt::from(5),
+                );
                 self.offset = &self.offset + &BigInt::from(6);
                 ret
             }
@@ -84,9 +89,12 @@ impl Iterator for RootConvergentIter {
         let a = self.base_iter.next().unwrap();
 
         let (p, q) = match self.iteration {
-            1 => { (a, BigInt::from(1)) },
-            2 => { (&a * &self.p_prev + BigInt::from(1), a) },
-            _ => { (&(&a * &self.p_prev) + &self.p_prev_prev, &(&a * &self.q_prev) + &self.q_prev_prev)}
+            1 => (a, BigInt::from(1)),
+            2 => (&a * &self.p_prev + BigInt::from(1), a),
+            _ => (
+                &(&a * &self.p_prev) + &self.p_prev_prev,
+                &(&a * &self.q_prev) + &self.q_prev_prev,
+            ),
         };
 
         self.p_prev_prev = replace(&mut self.p_prev, p.clone());
@@ -144,7 +152,7 @@ impl Iterator for PrimePowerFactors {
                 } else if &next_p * &next_p > self.rem {
                     let out = self.rem.clone();
                     self.rem = BigInt::from(1);
-                    return Some(out)
+                    return Some(out);
                 }
             }
 
@@ -186,7 +194,8 @@ impl Iterator for RootContFracIter {
 }
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone)]
-pub struct Partial { // TODO: should this be BigInt?
+pub struct Partial {
+    // TODO: should this be BigInt?
     pub d: i64,
     pub a: i64,
     pub b: i64,
@@ -220,7 +229,7 @@ impl Partial {
 
         loop {
             let quant = -next_a + next_r * next_b;
-            if quant > 0 && quant*quant > self.d {
+            if quant > 0 && quant * quant > self.d {
                 next_r -= 1;
             } else {
                 break;
@@ -229,7 +238,7 @@ impl Partial {
 
         loop {
             let quant = next_b * (next_r + 1) - next_a;
-            if quant <= 0 || quant*quant <= self.d {
+            if quant <= 0 || quant * quant <= self.d {
                 next_r += 1;
             } else {
                 break;
@@ -246,7 +255,11 @@ impl Partial {
             panic!(">= 1 not satisfied!");
         }
 
-        let out = Partial { d: self.d, b: next_b, a: next_a };
+        let out = Partial {
+            d: self.d,
+            b: next_b,
+            a: next_a,
+        };
 
         (next_r, out)
     }
@@ -284,7 +297,10 @@ pub fn possible_primes() -> PossiblePrimes {
     let b: Vec<BigInt> = vec![1, 2, 3, 4].iter().map(|n: &i64| BigInt::from(*n)).collect::<Vec<BigInt>>();
     */
 
-    PossiblePrimes { state: PossiblePrimesState::Two, offset: BigInt::from(0) }
+    PossiblePrimes {
+        state: PossiblePrimesState::Two,
+        offset: BigInt::from(0),
+    }
 }
 
 /// Raises a value to the power of exp, modulo the specified modulus. This uses exponentiation by
@@ -306,16 +322,21 @@ pub fn possible_primes() -> PossiblePrimes {
 /// ```
 #[inline]
 pub fn powmod<T, E>(mut base: T, mut exp: E, modulo: T) -> T
-    where T: Clone + One + Mul<T, Output = T> + Rem<T, Output = T> + MulMod,
-          E: Copy + One + Zero + Eq + ShrAssign<E> + Ord + BitAnd<E, Output=E>
+where
+    T: Clone + One + Mul<T, Output = T> + Rem<T, Output = T> + MulMod,
+    E: Copy + One + Zero + Eq + ShrAssign<E> + Ord + BitAnd<E, Output = E>,
 {
-    if exp == E::zero() { return T::one() }
+    if exp == E::zero() {
+        return T::one();
+    }
 
     while exp & E::one() == E::zero() {
         base = mul_mod_ptr(&base, &base, &modulo);
         exp >>= E::one();
     }
-    if exp == E::one() { return base }
+    if exp == E::one() {
+        return base;
+    }
 
     let mut acc = base.clone();
     while exp > E::one() {
@@ -532,22 +553,24 @@ pub fn all_primes(cap: usize) -> Vec<usize> {
     bools.push(false);
     bools.push(false);
 
-    for _ in 2 .. cap {
+    for _ in 2..cap {
         bools.push(true);
     }
 
-    for p in 2 .. cap { // TODO -- use possible primes here (requires a usize possible_primes)
+    for p in 2..cap {
+        // TODO -- use possible primes here (requires a usize possible_primes)
         if bools[p] {
-            for k in ForeverRange::new(p*p, |n| Some(n + p)).take_while(|&n| n < cap) {
+            for k in ForeverRange::new(p * p, |n| Some(n + p)).take_while(|&n| n < cap) {
                 bools[k] = false;
             }
         }
-        if p*p >= cap {
+        if p * p >= cap {
             break;
         }
     }
 
-    bools.iter()
+    bools
+        .iter()
         .enumerate()
         .filter(|val| *val.1)
         .map(|val| val.0)
@@ -618,10 +641,15 @@ pub fn num_prime_div_sieve(cap: usize) -> Vec<u64> {
     let mut out = vec![0; cap];
 
     // TODO R3 -- make a usize version of possible_primes. Do it in a cute way, too???
-    for p in 2 .. cap {
+    for p in 2..cap {
         if *out.get(p).unwrap() == 0 {
             // then p is prime
-            for k in itertools::unfold(0, |state| { *state += p; Some(*state) }).take_while(|n| *n < cap) {
+            for k in itertools::unfold(0, |state| {
+                *state += p;
+                Some(*state)
+            })
+            .take_while(|n| *n < cap)
+            {
                 *out.get_mut(k).unwrap() += 1;
             }
         }
@@ -754,11 +782,11 @@ pub fn all_sum_divisors(cap: usize) -> Vec<usize> {
 
     out.push(0);
 
-    for _ in 1 .. cap {
+    for _ in 1..cap {
         out.push(1);
     }
 
-    for p in 2 .. cap {
+    for p in 2..cap {
         if out[p] == 1 {
             // then it's a prime!
 
@@ -824,7 +852,10 @@ pub fn totient(mut n: u64) -> u64 {
         totient *= prod;
     }
 
-    for p in itertools::unfold(1, |state| { *state += 2; Some(*state) }) {
+    for p in itertools::unfold(1, |state| {
+        *state += 2;
+        Some(*state)
+    }) {
         if n % p == 0 {
             n /= p;
             let mut prod = p - 1;
@@ -833,7 +864,7 @@ pub fn totient(mut n: u64) -> u64 {
                 prod *= p;
             }
             totient *= prod;
-        } else if p*p > n {
+        } else if p * p > n {
             if n > 1 {
                 totient *= n - 1;
             }
@@ -865,19 +896,34 @@ pub fn all_totient(cap: usize) -> Vec<usize> {
 
     out.push(0); // phi(0) == 0
 
-    for _ in 1 .. cap {
+    for _ in 1..cap {
         out.push(1);
     }
 
-    for p in 2 .. cap {
+    for p in 2..cap {
         // then it's prime
         if *out.get(p).unwrap() == 1 {
-            for pmult in itertools::unfold(0, |state| { *state += p; Some(*state) }).take_while(|&k| k < cap) {
-                *out.get_mut(pmult).unwrap() *= p-1;
+            for pmult in itertools::unfold(0, |state| {
+                *state += p;
+                Some(*state)
+            })
+            .take_while(|&k| k < cap)
+            {
+                *out.get_mut(pmult).unwrap() *= p - 1;
             }
 
-            for ppow in itertools::unfold(p, |m| { *m *= p; Some(*m) }).take_while(|&k| k < cap) {
-                for ppowmult in itertools::unfold(0, |m| { *m += ppow; Some(*m) }).take_while(|&k| k < cap) {
+            for ppow in itertools::unfold(p, |m| {
+                *m *= p;
+                Some(*m)
+            })
+            .take_while(|&k| k < cap)
+            {
+                for ppowmult in itertools::unfold(0, |m| {
+                    *m += ppow;
+                    Some(*m)
+                })
+                .take_while(|&k| k < cap)
+                {
                     *out.get_mut(ppowmult).unwrap() *= p;
                 }
             }
@@ -932,11 +978,7 @@ impl MulMod for u64 {
 
         if m & msb == 0 {
             for _ in 0..64 {
-                d = if d > mp2 {
-                    (d << 1) - m
-                } else {
-                    d << 1
-                };
+                d = if d > mp2 { (d << 1) - m } else { d << 1 };
                 if x & msb != 0 {
                     d += y;
                 }
@@ -964,7 +1006,11 @@ impl MulMod for u64 {
                 }
                 x <<= 1;
             }
-            if d >= m { d - m } else { d }
+            if d >= m {
+                d - m
+            } else {
+                d
+            }
         }
     }
 }
@@ -983,11 +1029,7 @@ impl MulMod for u32 {
 
         if m & msb == 0 {
             for _ in 0..32 {
-                d = if d > mp2 {
-                    (d << 1) - m
-                } else {
-                    d << 1
-                };
+                d = if d > mp2 { (d << 1) - m } else { d << 1 };
                 if x & msb != 0 {
                     d += y;
                 }
@@ -1015,7 +1057,11 @@ impl MulMod for u32 {
                 }
                 x <<= 1;
             }
-            if d >= m { d - m } else { d }
+            if d >= m {
+                d - m
+            } else {
+                d
+            }
         }
     }
 }
@@ -1052,7 +1098,7 @@ impl IsPseudoPrime for u32 {
         if bd == 1 {
             return true;
         }
-        for _ in 0 .. s {
+        for _ in 0..s {
             if bd + 1 == n {
                 return true;
             } else {
@@ -1080,7 +1126,7 @@ impl IsPseudoPrime for u64 {
         if bd == 1 {
             return true;
         }
-        for _ in 0 .. s {
+        for _ in 0..s {
             if bd + 1 == n {
                 return true;
             } else {
@@ -1115,7 +1161,8 @@ impl IsPrime for u32 {
             *self == 7
         } else {
             // Theorem [Jaeschke, Sinclair]: This works
-            [2, 7, 61].into_iter()
+            [2, 7, 61]
+                .into_iter()
                 .all(|&b| b % *self == 0 || self.is_pseudo_prime(b))
         }
     }
@@ -1135,7 +1182,8 @@ impl IsPrime for u64 {
             *self == 7
         } else {
             // Theorem [Jaeschke, Sinclair]: This works
-            [2, 325, 9375, 28178, 450775, 9780504, 1795265022].into_iter()
+            [2, 325, 9375, 28178, 450775, 9780504, 1795265022]
+                .into_iter()
                 .all(|&b| b % *self == 0 || self.is_pseudo_prime(b))
         }
     }
@@ -1177,7 +1225,6 @@ pub fn mod_inv(x: u64, m: u64) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use std;
     use super::*;
 
     #[test]
@@ -1190,23 +1237,31 @@ mod tests {
     #[test]
     fn mod_inv_test() {
         for m in vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 61, 173] {
-            for x in 1 .. m {
+            for x in 1..m {
                 let x_inv = mod_inv(x, m);
                 assert_eq!(mul_mod(x, x_inv, m), 1);
             }
         }
     }
 
-    fn to_big_int<'a, T: Iterator<Item=&'a i64>>(it: T) -> Vec<BigInt> {
+    fn to_big_int<'a, T: Iterator<Item = &'a i64>>(it: T) -> Vec<BigInt> {
         it.map(|n: &i64| BigInt::from(*n)).collect()
     }
 
     #[test]
     fn num_div_test() {
         let test_cases = vec![
-            (1, 1), (2, 2), (3, 2), (4, 3), (5, 2),
-            (6, 4), (7, 2), (8, 4), (9, 3), (10, 4),
-            (37 * 37, 3)
+            (1, 1),
+            (2, 2),
+            (3, 2),
+            (4, 3),
+            (5, 2),
+            (6, 4),
+            (7, 2),
+            (8, 4),
+            (9, 3),
+            (10, 4),
+            (37 * 37, 3),
         ];
 
         for (n, nd) in test_cases {
@@ -1281,7 +1336,7 @@ mod tests {
     fn is_prime_u32_test() {
         let cap = 65536;
         let expected = all_primes(cap);
-        let actual = (0 .. cap as u32)
+        let actual = (0..cap as u32)
             .filter(|&n| n.is_prime())
             .map(|n| n as usize) // for comparison
             .collect::<Vec<usize>>();
@@ -1307,16 +1362,16 @@ mod tests {
 
         assert_eq!(mul_mod_u32(1239876, 2948635, half), 18476);
         assert_eq!(mul_mod_u32(half, half, half), 0);
-        assert_eq!(mul_mod_u32(half+1, half+1, half), 1);
+        assert_eq!(mul_mod_u32(half + 1, half + 1, half), 1);
 
         assert_eq!(mul_mod_u32(max, max, max), 0);
         assert_eq!(mul_mod_u32(1239876, 2948635, max), 924601215);
         assert_eq!(mul_mod_u32(1239876, max, max), 0);
-        assert_eq!(mul_mod_u32(1239876, max-1, max), max-1239876);
+        assert_eq!(mul_mod_u32(1239876, max - 1, max), max - 1239876);
         assert_eq!(mul_mod_u32(max, 2948635, max), 0);
-        assert_eq!(mul_mod_u32(max-1, 2948635, max), max-2948635);
-        assert_eq!(mul_mod_u32(max-1, max-1, max), 1);
-        assert_eq!(mul_mod_u32(2, max/2, max-1), 0);
+        assert_eq!(mul_mod_u32(max - 1, 2948635, max), max - 2948635);
+        assert_eq!(mul_mod_u32(max - 1, max - 1, max), 1);
+        assert_eq!(mul_mod_u32(2, max / 2, max - 1), 0);
     }
 
     #[test]
@@ -1337,15 +1392,15 @@ mod tests {
 
         assert_eq!(mul_mod_u64(1239876, 2948635, half), 18476);
         assert_eq!(mul_mod_u64(half, half, half), 0);
-        assert_eq!(mul_mod_u64(half+1, half+1, half), 1);
+        assert_eq!(mul_mod_u64(half + 1, half + 1, half), 1);
 
         assert_eq!(mul_mod_u64(max, max, max), 0);
         assert_eq!(mul_mod_u64(1239876, 2948635, max), 3655941769260);
         assert_eq!(mul_mod_u64(1239876, max, max), 0);
-        assert_eq!(mul_mod_u64(1239876, max-1, max), max-1239876);
+        assert_eq!(mul_mod_u64(1239876, max - 1, max), max - 1239876);
         assert_eq!(mul_mod_u64(max, 2948635, max), 0);
-        assert_eq!(mul_mod_u64(max-1, 2948635, max), max-2948635);
-        assert_eq!(mul_mod_u64(max-1, max-1, max), 1);
-        assert_eq!(mul_mod_u64(2, max/2, max-1), 0);
+        assert_eq!(mul_mod_u64(max - 1, 2948635, max), max - 2948635);
+        assert_eq!(mul_mod_u64(max - 1, max - 1, max), 1);
+        assert_eq!(mul_mod_u64(2, max / 2, max - 1), 0);
     }
 }

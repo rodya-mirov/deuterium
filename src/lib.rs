@@ -1,10 +1,10 @@
-pub extern crate num;
 extern crate itertools;
+pub extern crate num;
 
-pub mod numerics;
-pub mod iterators;
-pub mod prelude;
 pub mod data;
+pub mod iterators;
+pub mod numerics;
+pub mod prelude;
 
 ///
 /// Module for the sort of "toy computations" with no real mathematical signficance, but
@@ -53,7 +53,7 @@ pub mod toys {
     /// ```
     pub fn is_symmetric<T: PartialEq>(v: &[T]) -> bool {
         let length = v.len();
-        for i in 0 .. length / 2 {
+        for i in 0..length / 2 {
             if v.get(i) != v.get(length - i - 1) {
                 return false;
             }

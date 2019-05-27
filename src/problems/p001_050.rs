@@ -1,18 +1,18 @@
-use std::cmp::{max};
+use std::cmp::max;
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
-use std::collections::{HashMap, HashSet, BinaryHeap};
 
 use num;
-use num::Integer;
-use num::bigint::BigInt;
 
+use num::bigint::BigInt;
+use num::Integer;
 use std::str::FromStr;
 
 use itertools;
 
 use euler_lib::prelude::*;
-use euler_lib::{toys, numerics};
+use euler_lib::{numerics, toys};
 
 pub fn problem(problem_number: i32) -> String {
     match problem_number {
@@ -68,8 +68,11 @@ pub fn problem(problem_number: i32) -> String {
         50 => p050(),
 
         _ => {
-            panic!("Problem {} should not be passed to this module!", problem_number);
-        },
+            panic!(
+                "Problem {} should not be passed to this module!",
+                problem_number
+            );
+        }
     }
 }
 
@@ -188,7 +191,7 @@ pub fn p007() -> String {
         if numerics::is_prime(&p) {
             count += 1;
             if count == cap {
-                return p.to_str_radix(10)
+                return p.to_str_radix(10);
             }
         }
     }
@@ -197,20 +200,19 @@ pub fn p007() -> String {
 }
 
 pub fn p008() -> String {
-    use std::fs::File;
     use std::io::prelude::*;
 
     let filename = "resources/p008.txt";
 
-    let mut f = File::open(filename)
-        .expect(&format!("File '{}' not found!", filename));
+    let mut f = File::open(filename).expect(&format!("File '{}' not found!", filename));
 
     let mut contents = String::new();
 
     f.read_to_string(&mut contents)
         .expect("IO issue of some kind");
 
-    let contents: Vec<i64> = contents.chars()
+    let contents: Vec<i64> = contents
+        .chars()
         .filter(|c: &char| c.is_digit(10))
         .map(|c: char| c.to_digit(10).unwrap() as i64) // 9^13 < i64.max_value
         .collect();
@@ -218,8 +220,8 @@ pub fn p008() -> String {
     let prod_length = 13;
     let mut max_prod = 0;
 
-    for i in prod_length .. (contents.len()+1) {
-        let prod: i64 = contents[i-prod_length .. i].iter().product();
+    for i in prod_length..(contents.len() + 1) {
+        let prod: i64 = contents[i - prod_length..i].iter().product();
         max_prod = max(max_prod, prod);
     }
 
@@ -229,12 +231,12 @@ pub fn p008() -> String {
 pub fn p009() -> String {
     let max_sum = 1000;
 
-    for a in 1 .. max_sum / 3 {
-        for b in a+1 .. (max_sum - a) / 2 {
+    for a in 1..max_sum / 3 {
+        for b in a + 1..(max_sum - a) / 2 {
             let c = 1000 - a - b;
 
-            if a*a + b*b == c*c {
-                return (a*b*c).to_string();
+            if a * a + b * b == c * c {
+                return (a * b * c).to_string();
             }
         }
     }
@@ -252,47 +254,69 @@ pub fn p010() -> String {
     sum.to_str_radix(10)
 }
 
-pub fn p011() -> String  {
+pub fn p011() -> String {
     let mut text = String::new();
 
-    File::open("resources/p011.txt").expect("Error reading file!")
-        .read_to_string(&mut text).expect("Error reading file!");
+    File::open("resources/p011.txt")
+        .expect("Error reading file!")
+        .read_to_string(&mut text)
+        .expect("Error reading file!");
 
-    let grid: Vec<Vec<i64>> = text.trim()
+    let grid: Vec<Vec<i64>> = text
+        .trim()
         .lines()
         .map(|line: &str| {
-            line.split_whitespace().map(|token| {
-                token.parse::<i64>().expect("Couldn't parse string?")
-            }).collect::<Vec<i64>>()
-        }).collect();
+            line.split_whitespace()
+                .map(|token| token.parse::<i64>().expect("Couldn't parse string?"))
+                .collect::<Vec<i64>>()
+        })
+        .collect();
 
     let size = 20; // height and width
 
     let mut max_prod = -1;
-    for y in 0 .. size {
-        for x in 0 .. size - 4 {
-            let horizontal: i64 = (0..4).map(|i: i64| grid.get(y).unwrap().get(x+i as usize).unwrap()).product();
+    for y in 0..size {
+        for x in 0..size - 4 {
+            let horizontal: i64 = (0..4)
+                .map(|i: i64| grid.get(y).unwrap().get(x + i as usize).unwrap())
+                .product();
             max_prod = max(max_prod, horizontal);
         }
     }
 
-    for x in 0 .. size {
-        for y in 0 .. size - 4 {
-            let vertical: i64 = (0..4).map(|i: i64| grid.get(y+i as usize).unwrap().get(x).unwrap()).product();
+    for x in 0..size {
+        for y in 0..size - 4 {
+            let vertical: i64 = (0..4)
+                .map(|i: i64| grid.get(y + i as usize).unwrap().get(x).unwrap())
+                .product();
             max_prod = max(max_prod, vertical);
         }
     }
 
-    for x in 0 .. size - 4 {
-        for y in 0 .. size - 4 {
-            let dr_diag: i64 = (0..4).map(|i: i64| grid.get(y+i as usize).unwrap().get(x+i as usize).unwrap()).product();
+    for x in 0..size - 4 {
+        for y in 0..size - 4 {
+            let dr_diag: i64 = (0..4)
+                .map(|i: i64| {
+                    grid.get(y + i as usize)
+                        .unwrap()
+                        .get(x + i as usize)
+                        .unwrap()
+                })
+                .product();
             max_prod = max(max_prod, dr_diag);
         }
     }
 
-    for x in 3 .. size {
-        for y in 0 .. size - 4 {
-            let dl_diag = (0..4).map(|i: i64| grid.get(y+i as usize).unwrap().get(x-i as usize).unwrap()).product();
+    for x in 3..size {
+        for y in 0..size - 4 {
+            let dl_diag = (0..4)
+                .map(|i: i64| {
+                    grid.get(y + i as usize)
+                        .unwrap()
+                        .get(x - i as usize)
+                        .unwrap()
+                })
+                .product();
             max_prod = max(max_prod, dl_diag);
         }
     }
@@ -333,10 +357,13 @@ pub fn p012() -> String {
 pub fn p013() -> String {
     let mut text = String::new();
 
-    File::open("resources/p013.txt").expect("Error reading file!")
-        .read_to_string(&mut text).expect("Error reading file!");
+    File::open("resources/p013.txt")
+        .expect("Error reading file!")
+        .read_to_string(&mut text)
+        .expect("Error reading file!");
 
-    let total = text.trim()
+    let total = text
+        .trim()
         .lines()
         .map(|line: &str| BigInt::from_str(line.trim()).expect("Error parsing BigInt"))
         .fold(BigInt::from(0), |acc, val| acc + val);
@@ -351,11 +378,7 @@ pub fn p014() -> String {
         } else if cache.contains_key(&n) {
             *cache.get(&n).unwrap()
         } else {
-            let next = if n % 2 == 0 {
-                n / 2
-            } else {
-                3 * n + 1
-            };
+            let next = if n % 2 == 0 { n / 2 } else { 3 * n + 1 };
 
             let val = collatz_count(next, cache) + 1;
             cache.insert(n, val);
@@ -365,7 +388,7 @@ pub fn p014() -> String {
 
     let mut cache = HashMap::new();
 
-    let (best_i, _) = (1 .. 1_000_000)
+    let (best_i, _) = (1..1_000_000)
         .map(|i| (i, collatz_count(i, &mut cache)))
         .fold((0, 0), |(acc_i, acc_ct), (next_i, next_ct)| {
             if acc_ct >= next_ct {
@@ -385,7 +408,7 @@ pub fn p015() -> String {
         } else if cache.contains_key(&(x, y)) {
             cache.get(&(x, y)).unwrap().clone()
         } else {
-            let ways = count(x-1, y, cache) + count(x, y-1, cache);
+            let ways = count(x - 1, y, cache) + count(x, y - 1, cache);
             cache.insert((x, y), ways.clone());
             ways
         }
@@ -400,8 +423,12 @@ pub fn p016() -> String {
     use num::pow;
 
     let digit_sum: BigInt = pow(BigInt::from(2), 1000)
-        .to_str_radix(10).chars().filter_map(|c: char| c.to_digit(10))
-        .fold(BigInt::from(0), |acc: BigInt, digit: u32| &acc + &BigInt::from(digit));
+        .to_str_radix(10)
+        .chars()
+        .filter_map(|c: char| c.to_digit(10))
+        .fold(BigInt::from(0), |acc: BigInt, digit: u32| {
+            &acc + &BigInt::from(digit)
+        });
 
     digit_sum.to_str_radix(10)
 }
@@ -419,7 +446,7 @@ pub fn p017() -> String {
         } else if n % 100 == 0 {
             char_len("hundred") + letter_count(n / 100)
         } else if n > 100 {
-            letter_count(n - (n%100)) + letter_count(n%100) + 3
+            letter_count(n - (n % 100)) + letter_count(n % 100) + 3
         } else if n < 20 {
             let s = match n {
                 1 => "one",
@@ -464,30 +491,39 @@ pub fn p017() -> String {
         }
     }
 
-    (1 .. 1_000+1).map(letter_count).sum::<u64>().to_string()
+    (1..1_000 + 1).map(letter_count).sum::<u64>().to_string()
 }
 
 pub fn p018() -> String {
     let mut text = String::new();
 
-    File::open("resources/p018.txt").expect("Error reading file!")
-        .read_to_string(&mut text).expect("Error reading file!");
+    File::open("resources/p018.txt")
+        .expect("Error reading file!")
+        .read_to_string(&mut text)
+        .expect("Error reading file!");
 
-    let grid: Vec<Vec<i64>> = text.trim()
+    let grid: Vec<Vec<i64>> = text
+        .trim()
         .lines()
         .map(|line: &str| {
-            line.split_whitespace().map(|token| {
-                token.parse::<i64>().expect("Couldn't parse string?")
-            }).collect::<Vec<i64>>()
-        }).collect();
+            line.split_whitespace()
+                .map(|token| token.parse::<i64>().expect("Couldn't parse string?"))
+                .collect::<Vec<i64>>()
+        })
+        .collect();
 
-    fn best_path(x: usize, y: usize, grid: &Vec<Vec<i64>>, cache: &mut HashMap<(usize, usize), i64>) -> i64 {
+    fn best_path(
+        x: usize,
+        y: usize,
+        grid: &Vec<Vec<i64>>,
+        cache: &mut HashMap<(usize, usize), i64>,
+    ) -> i64 {
         let curr = *grid.get(y).unwrap().get(x).unwrap();
         if y == grid.len() - 1 {
             curr
         } else {
-            let left = best_path(x, y+1, grid, cache);
-            let right = best_path(x+1, y+1, grid, cache);
+            let left = best_path(x, y + 1, grid, cache);
+            let right = best_path(x + 1, y + 1, grid, cache);
             let val = curr + max(left, right);
             cache.insert((x, y), val);
             val
@@ -499,16 +535,16 @@ pub fn p018() -> String {
 
 pub fn p019() -> String {
     struct Date {
-        month: u32, // 1 is January ... 12 is December (no 0, no 13)
-        date: u32,  // 1 to self.end_of_month()
-        year: u32,  // 1901 to 2001
+        month: u32,       // 1 is January ... 12 is December (no 0, no 13)
+        date: u32,        // 1 to self.end_of_month()
+        year: u32,        // 1901 to 2001
         day_of_week: u32, // 1 is Sunday, 2 is Monday ... 7 is Saturday
     }
 
     // I might have gone overboard on this but date math is actually kind of annoying
     impl Date {
         fn is_leap_year(&self) -> bool {
-            return self.year % 4 == 0 && (self.year % 100 != 0 || self.year % 400 == 0)
+            return self.year % 4 == 0 && (self.year % 100 != 0 || self.year % 400 == 0);
         }
 
         fn end_of_month(&self) -> u32 {
@@ -517,9 +553,16 @@ pub fn p019() -> String {
             } else if vec![4, 6, 9, 11].contains(&self.month) {
                 30
             } else if self.month == 2 {
-                if self.is_leap_year() { 29 } else { 28 }
+                if self.is_leap_year() {
+                    29
+                } else {
+                    28
+                }
             } else {
-                panic!("Unrecognized month {}; expected 1, 2, 3, ..., 12", self.month);
+                panic!(
+                    "Unrecognized month {}; expected 1, 2, 3, ..., 12",
+                    self.month
+                );
             }
         }
 
@@ -544,48 +587,49 @@ pub fn p019() -> String {
         }
 
         fn next(self) -> Date {
-            let next_date =
-                if self.end_of_month() == self.date {
-                    1
-                } else {
-                    self.date + 1
-                };
+            let next_date = if self.end_of_month() == self.date {
+                1
+            } else {
+                self.date + 1
+            };
 
-            let next_month =
-                if next_date == 1 {
-                    self.next_month()
-                } else {
-                    self.month
-                };
+            let next_month = if next_date == 1 {
+                self.next_month()
+            } else {
+                self.month
+            };
 
-            let next_year =
-                if next_date == 1 && next_month == 1 {
-                    self.year + 1
-                } else {
-                    self.year
-                };
+            let next_year = if next_date == 1 && next_month == 1 {
+                self.year + 1
+            } else {
+                self.year
+            };
 
-            let next_day_of_week =
-                if self.day_of_week == 7 {
-                    1
-                } else {
-                    self.day_of_week + 1
-                };
+            let next_day_of_week = if self.day_of_week == 7 {
+                1
+            } else {
+                self.day_of_week + 1
+            };
 
             Date {
                 date: next_date,
                 month: next_month,
                 year: next_year,
-                day_of_week: next_day_of_week
+                day_of_week: next_day_of_week,
             }
         }
     }
 
-    let mut current_date = Date { day_of_week: 2, date: 1, month: 1, year: 1900 };
+    let mut current_date = Date {
+        day_of_week: 2,
+        date: 1,
+        month: 1,
+        year: 1900,
+    };
 
     let mut count = 0;
 
-    while ! current_date.stop() {
+    while !current_date.stop() {
         if current_date.start() && current_date.is_win() {
             count += 1;
         }
@@ -607,7 +651,8 @@ pub fn p020() -> String {
     }
 
     fact(100)
-        .to_str_radix(10).chars()
+        .to_str_radix(10)
+        .chars()
         .filter_map(|c: char| c.to_digit(10))
         .fold(BigInt::from(0), |acc, digit| acc + BigInt::from(digit))
         .to_str_radix(10)
@@ -628,39 +673,45 @@ pub fn p021() -> String {
         }
     };
 
-    (2 .. 10000)
+    (2..10000)
         .map(|n: u32| BigInt::from(n))
         .filter(|n: &BigInt| {
             let sd = cpd(n);
             &sd != n && &cpd(&sd) == n
-        }).fold(BigInt::from(0), |acc, next| &acc + &next)
+        })
+        .fold(BigInt::from(0), |acc, next| &acc + &next)
         .to_str_radix(10)
 }
 
 pub fn p022() -> String {
-    let letter_score: HashMap<char, u64> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        .chars().enumerate()
-        .fold(HashMap::new(), |mut map, tup| {
-            map.insert(tup.1, tup.0 as u64 + 1);
-            map
-        });
+    let letter_score: HashMap<char, u64> =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            .chars()
+            .enumerate()
+            .fold(HashMap::new(), |mut map, tup| {
+                map.insert(tup.1, tup.0 as u64 + 1);
+                map
+            });
 
-    let score = |name: &str| -> u64 {
-        name.chars().map(|c| *letter_score.get(&c).unwrap()).sum()
-    };
+    let score = |name: &str| -> u64 { name.chars().map(|c| *letter_score.get(&c).unwrap()).sum() };
 
     let mut text = String::new();
 
-    File::open("resources/p022.txt").expect("Error reading file!")
-        .read_to_string(&mut text).expect("Error reading file!");
+    File::open("resources/p022.txt")
+        .expect("Error reading file!")
+        .read_to_string(&mut text)
+        .expect("Error reading file!");
 
-    let mut names: Vec<String> = text.split(",")
+    let mut names: Vec<String> = text
+        .split(",")
         .map(|token| token.chars().filter(|c| *c != '"').collect())
         .collect();
 
     names.sort();
 
-    let total: u64 = names.iter().enumerate()
+    let total: u64 = names
+        .iter()
+        .enumerate()
         .map(|tup| (tup.0 as u64 + 1) * score(tup.1))
         .sum();
 
@@ -670,24 +721,25 @@ pub fn p022() -> String {
 pub fn p023() -> String {
     let cap = 28124;
 
-    let abundant: Vec<u64> = (1 .. cap)
+    let abundant: Vec<u64> = (1..cap)
         .filter(|n| {
             let bi = BigInt::from(*n);
             &numerics::sum_divisors(bi.clone()) - &bi > bi
-        }).collect();
+        })
+        .collect();
 
-    let mut sums: HashSet<u64> = (1 .. cap).collect();
+    let mut sums: HashSet<u64> = (1..cap).collect();
 
-    for i in 0 .. abundant.len() {
+    for i in 0..abundant.len() {
         let a = abundant.get(i).unwrap();
-        for j in 0 .. i+1 {
+        for j in 0..i + 1 {
             let b = abundant.get(j).unwrap();
 
             if a + b >= cap {
                 break;
             }
 
-            sums.remove(&(a+b));
+            sums.remove(&(a + b));
         }
     }
 
@@ -696,10 +748,14 @@ pub fn p023() -> String {
 }
 
 pub fn p024() -> String {
-    let digits = (0 .. 10).collect::<Vec<i64>>();
-    toys::nth_permutation(&digits, 1_000_000 -1) // -1 from their counting from 1
-        .into_iter().map(|n| *n)
-        .fold(String::new(), |mut s, d| { s.push_str(&d.to_string()); s })
+    let digits = (0..10).collect::<Vec<i64>>();
+    toys::nth_permutation(&digits, 1_000_000 - 1) // -1 from their counting from 1
+        .into_iter()
+        .map(|n| *n)
+        .fold(String::new(), |mut s, d| {
+            s.push_str(&d.to_string());
+            s
+        })
 }
 
 pub fn p025() -> String {
@@ -730,7 +786,7 @@ pub fn p026() -> String {
             if rem == 0 {
                 return 0;
             } else if seen.contains(&rem) {
-                return (seen.len() - seen.iter().position(|n| *n == rem).unwrap()) as i64
+                return (seen.len() - seen.iter().position(|n| *n == rem).unwrap()) as i64;
             } else {
                 seen.push(rem);
             }
@@ -740,7 +796,7 @@ pub fn p026() -> String {
     let mut max_rep = -1;
     let mut max_den = -1;
 
-    for d in 1 .. 1_000 {
+    for d in 1..1_000 {
         let rep = num_repeating_digits(d);
         if rep > max_rep {
             max_rep = rep;
@@ -753,12 +809,17 @@ pub fn p026() -> String {
 
 pub fn p027() -> String {
     let cap = 5_000_000 as i64; // picked abitrarily; panics if it was too low
-    let primes: HashSet<i64> = numerics::all_primes(cap as usize).into_iter()
-        .map(|p| p as i64).collect();
+    let primes: HashSet<i64> = numerics::all_primes(cap as usize)
+        .into_iter()
+        .map(|p| p as i64)
+        .collect();
 
     let is_prime = |n: i64| {
         if n >= cap {
-            panic!("Cannot determine primality of {} because cap {} is too low", n, cap);
+            panic!(
+                "Cannot determine primality of {} because cap {} is too low",
+                n, cap
+            );
         } else {
             primes.contains(&n)
         }
@@ -767,21 +828,20 @@ pub fn p027() -> String {
     let mut best_count = -1;
     let mut best_prod = -1;
 
-    for a in -999 .. 1000 {
-        for b in -999 .. 1000 {
-            let poly_fn = |n| Some(n*n + a*n + b);
-            let count = itertools::unfold(0 as i64, |state|
-                {
-                    let out = poly_fn(*state);
-                    *state += 1;
-                    out
-                })
-                .take_while(|poly| is_prime(*poly))
-                .count() as i64;
+    for a in -999..1000 {
+        for b in -999..1000 {
+            let poly_fn = |n| Some(n * n + a * n + b);
+            let count = itertools::unfold(0 as i64, |state| {
+                let out = poly_fn(*state);
+                *state += 1;
+                out
+            })
+            .take_while(|poly| is_prime(*poly))
+            .count() as i64;
 
             if count > best_count {
                 best_count = count;
-                best_prod = a*b;
+                best_prod = a * b;
             }
         }
     }
@@ -796,9 +856,9 @@ pub fn p028() -> String {
     let mut last = 1;
 
     let max_diam = 1_001; // diameter of the spiral
-    // NB: you could easily get a closed form for this but this is already <1ms
+                          // NB: you could easily get a closed form for this but this is already <1ms
     while 2 * row + 1 <= max_diam {
-        for _ in 0 .. 4 {
+        for _ in 0..4 {
             last += 2 * row;
             total += last;
         }
@@ -812,8 +872,8 @@ pub fn p028() -> String {
 pub fn p029() -> String {
     let mut distinct = HashSet::new();
 
-    for a in 2 .. 101 {
-        for b in 2 .. 101 {
+    for a in 2..101 {
+        for b in 2..101 {
             distinct.insert(num::pow(BigInt::from(a), b));
         }
     }
@@ -825,7 +885,7 @@ pub fn p030() -> String {
     // a 7 digit number has digit-power-sum at most 9^5 * 7 < 1,000,000
     // so all solutions are <= 6 digits
 
-    (10 .. 1_000_000 as i64)
+    (10..1_000_000 as i64)
         .filter(|n| {
             let mut total = 0;
             let mut n_copy = *n;
@@ -835,7 +895,8 @@ pub fn p030() -> String {
                 n_copy /= 10;
             }
             total == *n
-        }).sum::<i64>()
+        })
+        .sum::<i64>()
         .to_string()
 }
 
@@ -861,16 +922,14 @@ pub fn p032() -> String {
 
     let mut products_seen: HashSet<u64> = HashSet::new();
 
-    let piece = |perm: &[&u64], start, fin| {
-        perm[start..fin].iter().fold(0, |acc, d| acc*10 + *d)
-    };
+    let piece = |perm: &[&u64], start, fin| perm[start..fin].iter().fold(0, |acc, d| acc * 10 + *d);
 
     // NB: 362880 is 9!, so this is all permutations
-    for perm in (0 .. 362880).map(|n| toys::nth_permutation(&digits, n)) {
+    for perm in (0..362880).map(|n| toys::nth_permutation(&digits, n)) {
         // 99 * 99 = 9801 < 10000 so 2/2/5 doesn't work; WLoG can assume first is 3+ digit
-        for fac_end in 3 .. 9 {
+        for fac_end in 3..9 {
             let fac_a = piece(&perm, 0, fac_end);
-            for prod_start in fac_end+1 .. 9 {
+            for prod_start in fac_end + 1..9 {
                 let fac_b = piece(&perm, fac_end, prod_start);
                 let prod = piece(&perm, prod_start, 9);
 
@@ -887,17 +946,17 @@ pub fn p032() -> String {
 pub fn p033() -> String {
     let mut top = 1;
     let mut bot = 1;
-    for n1 in 1 .. 10 {
+    for n1 in 1..10 {
         for n2 in 1..10 {
-            for d1 in 1 .. 10 {
-                for d2 in 1 .. 10 {
+            for d1 in 1..10 {
+                for d2 in 1..10 {
                     // orig: 10n1 + n2 / 10d1 + d2
                     // new: n1 / d2
                     if n1 == n2 && d1 == d2 {
                         continue;
                     } else if n2 != d1 {
                         continue; // NB: could build this into the loop but it's already <1 ms
-                    } else if d2 * (10*n1 + n2) == n1 * (10*d1 + d2) {
+                    } else if d2 * (10 * n1 + n2) == n1 * (10 * d1 + d2) {
                         //println!("{}{}/{}{} == {}/{}", n1, n2, d1, d2, n1, d2);
                         top *= 10 * n1 + n2;
                         bot *= 10 * d1 + d2;
@@ -916,7 +975,7 @@ pub fn p034() -> String {
             if n <= 1 {
                 1
             } else {
-                n * fact(n-1)
+                n * fact(n - 1)
             }
         }
 
@@ -946,7 +1005,7 @@ pub fn p034() -> String {
     // - for 7 digit numbers, need at least 3 9s
     // but maybe 250ms is fast enough
 
-    let sum: i64 = (10 .. 2_177_282 + 1)
+    let sum: i64 = (10..2_177_282 + 1)
         .filter(|n| digit_fact_sum(*n, &facts) == *n)
         //.map(|n| { println!("{}", n); n })
         .map(|n| n as i64) // cast to i64 because I don't know why u32 is big enough (it is though)
@@ -966,11 +1025,17 @@ pub fn p035() -> String {
             count += 1;
         }
 
-        itertools::unfold(n, move |state| { *state = *state / pow + 10 * (*state % pow); Some(*state) })
-            .take(count)
+        itertools::unfold(n, move |state| {
+            *state = *state / pow + 10 * (*state % pow);
+            Some(*state)
+        })
+        .take(count)
     };
 
-    let prime_vec: Vec<_> = numerics::all_primes(cap).iter().map(|n| *n as u64).collect();
+    let prime_vec: Vec<_> = numerics::all_primes(cap)
+        .iter()
+        .map(|n| *n as u64)
+        .collect();
     let prime_set: HashSet<_> = prime_vec.iter().map(|n| *n).collect();
 
     let mut count = 0;
@@ -1010,8 +1075,9 @@ pub fn p036() -> String {
 
     let mut total = 0;
 
-    for n in 1 .. cap {
-        if n % 2 == 0 || n % 10 == 0 { // no leading zeros -- optimizes!
+    for n in 1..cap {
+        if n % 2 == 0 || n % 10 == 0 {
+            // no leading zeros -- optimizes!
             continue; // NB: could build this into an iterator to feel more fancy but it's not
         } else if dec_pal(n) && bin_pal(n) {
             total += n;
@@ -1025,17 +1091,25 @@ pub fn p037() -> String {
     let cap = 1_000_000; // picked out of thin air; panics if it was too low
     let desired = 11; // we're given that there are exactly 11; I didn't work out why
 
-    let primes: HashSet<usize> = numerics::all_primes(cap)
-        .into_iter().collect();
+    let primes: HashSet<usize> = numerics::all_primes(cap).into_iter().collect();
 
-    let truncatable: Vec<usize> = primes.iter()
+    let truncatable: Vec<usize> = primes
+        .iter()
         .filter(|p| **p >= 10)
-        .filter(|p_ref| { // L-trunc
+        .filter(|p_ref| {
+            // L-trunc
             let mut p = **p_ref;
             while p >= 10 {
-                p = p.to_string().chars().skip(1)
-                    .fold(String::new(), |mut s, c| { s.push(c); s })
-                    .parse().unwrap();
+                p = p
+                    .to_string()
+                    .chars()
+                    .skip(1)
+                    .fold(String::new(), |mut s, c| {
+                        s.push(c);
+                        s
+                    })
+                    .parse()
+                    .unwrap();
 
                 if !primes.contains(&p) {
                     return false;
@@ -1043,7 +1117,8 @@ pub fn p037() -> String {
             }
             true
         })
-        .filter(|p_ref| { // R-trunc
+        .filter(|p_ref| {
+            // R-trunc
             let mut p = **p_ref;
             while p > 0 {
                 if primes.contains(&p) {
@@ -1055,11 +1130,16 @@ pub fn p037() -> String {
             true
         })
         .take(11)
-        .map(|p| *p).collect();
+        .map(|p| *p)
+        .collect();
 
     if truncatable.len() != desired {
-        panic!("Missed some! Found {} but needed {}. Cap of {} was too low.",
-               truncatable.len(), desired, cap);
+        panic!(
+            "Missed some! Found {} but needed {}. Cap of {} was too low.",
+            truncatable.len(),
+            desired,
+            cap
+        );
     }
 
     truncatable.iter().sum::<usize>().to_string()
@@ -1088,11 +1168,14 @@ pub fn p038() -> String {
     let cap = 1_000_000_000 as u64; // all numbers must be above this
     let mut best = 0;
 
-    for n in 2 .. 10 as u64 {
-        for i in itertools::unfold(0, |state| { *state += 1; Some(*state) }) {
+    for n in 2..10 as u64 {
+        for i in itertools::unfold(0, |state| {
+            *state += 1;
+            Some(*state)
+        }) {
             let mut digits = Vec::new();
 
-            for j in 1 .. n+1 {
+            for j in 1..n + 1 {
                 push_digits(i * j, &mut digits);
             }
 
@@ -1113,20 +1196,26 @@ pub fn p039() -> String {
 
     let mut counts = HashMap::new();
 
-    for m in itertools::unfold(0_i64, |state| { *state += 1; Some(*state) }) {
-        for n in (1 .. m).filter(|&n| (m*n) % 2 == 0 && numerics::gcd(m, n) == 1) {
-
-            let a = m*m - n*n;
-            let b = 2*m*n;
-            let c = m*m + n*n;
+    for m in itertools::unfold(0_i64, |state| {
+        *state += 1;
+        Some(*state)
+    }) {
+        for n in (1..m).filter(|&n| (m * n) % 2 == 0 && numerics::gcd(m, n) == 1) {
+            let a = m * m - n * n;
+            let b = 2 * m * n;
+            let c = m * m + n * n;
 
             let base_p = a + b + c;
-            if base_p > cap { // as n increases, so does the perimeter
+            if base_p > cap {
+                // as n increases, so does the perimeter
                 break;
             }
 
-            for k in itertools::unfold(0, |state| { *state += 1; Some(*state) })
-                .take_while(|&k| k*base_p <= cap)
+            for k in itertools::unfold(0, |state| {
+                *state += 1;
+                Some(*state)
+            })
+            .take_while(|&k| k * base_p <= cap)
             {
                 let perimeter = k * base_p;
                 // no need to check for redundancies!
@@ -1139,7 +1228,7 @@ pub fn p039() -> String {
         }
 
         // 2m^2 + 2*m is the lowest perimeter of any triangle using m
-        if 2*m*(m+1) > cap {
+        if 2 * m * (m + 1) > cap {
             break;
         }
     }
@@ -1162,7 +1251,10 @@ pub fn p040() -> String {
 
     for goal_digit in vec![1, 10, 100, 1_000, 10_000, 100_000, 1_000_000] {
         let mut seen_so_far = 0;
-        for n in itertools::unfold(0, |state| { *state += 1; Some(*state) }) {
+        for n in itertools::unfold(0, |state| {
+            *state += 1;
+            Some(*state)
+        }) {
             let s = n.to_string();
 
             let num_chars = s.chars().count();
@@ -1198,9 +1290,9 @@ pub fn p041() -> String {
     }
 
     for num_digits in digit_options {
-        let digits: Vec<usize> = (1 .. num_digits+1).collect();
+        let digits: Vec<usize> = (1..num_digits + 1).collect();
         let num_perms = fact(num_digits);
-        for n in 0 .. num_perms {
+        for n in 0..num_perms {
             // start with the biggest permutation, so the first prime found is the biggest
             let perm = toys::nth_permutation(&digits, num_perms - n - 1);
             let val = perm.iter().fold(0, |acc, digit| acc * 10 + *digit);
@@ -1225,7 +1317,7 @@ pub fn p042() -> String {
 
         while tri < n {
             i += 1;
-            tri = (i*(i+1))/2;
+            tri = (i * (i + 1)) / 2;
 
             if tri == n {
                 return true;
@@ -1246,8 +1338,7 @@ pub fn p042() -> String {
     };
 
     let filename = "resources/p042.txt";
-    let mut f = File::open(filename)
-        .expect(&format!("File '{}' not found!", filename));
+    let mut f = File::open(filename).expect(&format!("File '{}' not found!", filename));
 
     let mut contents = String::new();
 
@@ -1256,7 +1347,8 @@ pub fn p042() -> String {
 
     let mut count = 0;
     for token in contents.split(',') {
-        let score = token.chars()
+        let score = token
+            .chars()
             .filter(|c| *c != '"') // strip quotes
             .map(|c| letter_scores.get(&c).unwrap())
             .sum();
@@ -1279,20 +1371,21 @@ pub fn p043() -> String {
         out
     }
 
-    let digits: Vec<_> = (0 .. 10).collect();
+    let digits: Vec<_> = (0..10).collect();
     let div_reqs = vec![2, 3, 5, 7, 11, 13, 17];
 
     let mut total: u64 = 0;
     // skip the ones with leading zeros
-    for n in fact(9) .. fact(10) {
+    for n in fact(9)..fact(10) {
         // shoddy iteration through pandigitals
         let perm = toys::nth_permutation(&digits, n);
 
-        let success = div_reqs.iter().enumerate()
-            .all(|(ind, div_req)| {
-                let subsum = perm[ind+1 .. ind+4].iter().fold(0, |acc, dig| acc * 10 + **dig);
-                subsum % div_req == 0
-            });
+        let success = div_reqs.iter().enumerate().all(|(ind, div_req)| {
+            let subsum = perm[ind + 1..ind + 4]
+                .iter()
+                .fold(0, |acc, dig| acc * 10 + **dig);
+            subsum % div_req == 0
+        });
 
         if success {
             let val = perm.iter().fold(0, |acc, dig| acc * 10 + **dig);
@@ -1313,7 +1406,7 @@ pub fn p044() -> String {
     let mut is_pent = |p| {
         while last_pent < p {
             pent_ind += 1;
-            let next_pent = pent_ind * (3*pent_ind - 1) / 2;
+            let next_pent = pent_ind * (3 * pent_ind - 1) / 2;
             if next_pent < last_pent {
                 panic!("Fuck! Overflow!");
             }
@@ -1345,7 +1438,7 @@ pub fn p044() -> String {
                     top_pent: next_top,
                     bot_ind: self.top_ind,
                     bot_pent: self.top_pent,
-                    diff: next_top - self.top_pent
+                    diff: next_top - self.top_pent,
                 });
             }
 
@@ -1358,13 +1451,13 @@ pub fn p044() -> String {
                     top_pent: self.top_pent,
                     bot_ind: self.bot_ind - 1,
                     bot_pent: next_bot,
-                    diff: self.top_pent - next_bot
+                    diff: self.top_pent - next_bot,
                 });
             }
         }
 
         pub fn pent(n: i64) -> i64 {
-            (n * (3*n - 1)) / 2
+            (n * (3 * n - 1)) / 2
         }
 
         pub fn new() -> PentState {
@@ -1373,7 +1466,7 @@ pub fn p044() -> String {
                 top_pent: 5,
                 bot_ind: 1,
                 bot_pent: 1,
-                diff: 4
+                diff: 4,
             }
         }
     }
@@ -1447,7 +1540,7 @@ pub fn p045() -> String {
         } else {
             successes += 1;
             if successes >= desired_successes {
-                return hex.to_string()
+                return hex.to_string();
             } else {
                 tri_ind = &tri_ind + &one;
                 tri = &tri_ind * (&tri_ind + &one) / &two;
@@ -1459,14 +1552,22 @@ pub fn p045() -> String {
 pub fn p046() -> String {
     let cap = 1_000_000; // picked out of the air; this function will panic if it wasn't high enough
 
-    let primes = &numerics::all_primes(cap as usize).into_iter()
-        .map(|n| n as i64).collect::<Vec<i64>>()[1..]; // skip 2 since we only want odds
+    let primes = &numerics::all_primes(cap as usize)
+        .into_iter()
+        .map(|n| n as i64)
+        .collect::<Vec<i64>>()[1..]; // skip 2 since we only want odds
 
-    let squares: HashSet<i64> = itertools::unfold(-1, |n| { *n += 1; Some(2 * (*n) * (*n) )})
-        .take_while(|n| *n <= cap)
-        .collect();
+    let squares: HashSet<i64> = itertools::unfold(-1, |n| {
+        *n += 1;
+        Some(2 * (*n) * (*n))
+    })
+    .take_while(|n| *n <= cap)
+    .collect();
 
-    for n in itertools::unfold(1, |state| { *state += 2; Some(*state) }) {
+    for n in itertools::unfold(1, |state| {
+        *state += 2;
+        Some(*state)
+    }) {
         let mut found = false;
         for p in primes {
             if squares.contains(&(n - p)) {
@@ -1478,7 +1579,7 @@ pub fn p046() -> String {
         }
 
         if !found {
-            return n.to_string()
+            return n.to_string();
         }
     }
 
@@ -1495,11 +1596,11 @@ pub fn p047() -> String {
 
     let sieve = numerics::num_prime_div_sieve(cap);
 
-    for n in 2 .. cap {
+    for n in 2..cap {
         if *sieve.get(n).unwrap() >= req_primes {
             consecutive += 1;
             if consecutive >= req_successes {
-                return (n - req_successes + 1).to_string()
+                return (n - req_successes + 1).to_string();
             }
         } else {
             consecutive = 0;
@@ -1510,7 +1611,7 @@ pub fn p047() -> String {
 }
 
 pub fn p048() -> String {
-    let total = (1 .. 1_000 +1)
+    let total = (1..1_000 + 1)
         .map(|n| num::pow(BigInt::from(n), n)) // n^n
         .fold(BigInt::from(0), |total, n| &total + &n); // sum
 
@@ -1544,13 +1645,19 @@ pub fn p049() -> String {
 
     // four digit primes
     let all_primes: Vec<usize> = numerics::all_primes(10_000)
-        .into_iter().skip_while(|&n| n < 1_000).collect();
+        .into_iter()
+        .skip_while(|&n| n < 1_000)
+        .collect();
 
     let prime_set: HashSet<usize> = all_primes.iter().map(|n| *n).collect();
 
     for &first_prime in all_primes.iter() {
         let dv = digit_vec(first_prime);
-        for perm in (0 .. fact_4).map(|n| toys::nth_permutation(&dv, n).into_iter().fold(0, |acc, &d| acc * 10 + d)) {
+        for perm in (0..fact_4).map(|n| {
+            toys::nth_permutation(&dv, n)
+                .into_iter()
+                .fold(0, |acc, &d| acc * 10 + d)
+        }) {
             if perm > first_prime && prime_set.contains(&perm) {
                 let third = perm + (perm - first_prime);
                 if third < 10_000 && prime_set.contains(&third) && is_perm(first_prime, third) {
@@ -1580,11 +1687,11 @@ pub fn p050() -> String {
     let mut best_prime = 0;
     let mut best_length = 0;
 
-    for start_ind in 0 .. primes_vec.len() {
+    for start_ind in 0..primes_vec.len() {
         let mut total = *primes_vec.get(start_ind).unwrap();
         let mut length = 1;
 
-        for end_ind in start_ind+1 .. primes_vec.len() {
+        for end_ind in start_ind + 1..primes_vec.len() {
             length += 1;
             total += *primes_vec.get(end_ind).unwrap();
 

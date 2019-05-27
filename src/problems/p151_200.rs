@@ -1,15 +1,18 @@
 use std::collections::{HashMap, HashSet};
 
-use euler_lib::numerics::{powmod};
+use euler_lib::numerics::powmod;
 
-use num::bigint::{BigUint};
-use num::{pow, Zero, One};
-use num::rational::{Ratio};
-
-
+use num::bigint::BigUint;
+use num::rational::Ratio;
+use num::{pow, One, Zero};
 
 pub fn p164() -> String {
-    fn count_sum(digits_remaining: u8, left_two: u8, left_one: u8, cache: &mut HashMap<(u8, u8, u8), BigUint>) -> BigUint {
+    fn count_sum(
+        digits_remaining: u8,
+        left_two: u8,
+        left_one: u8,
+        cache: &mut HashMap<(u8, u8, u8), BigUint>,
+    ) -> BigUint {
         let leading_sum = left_two + left_one;
 
         if leading_sum > 9 {
@@ -25,7 +28,7 @@ pub fn p164() -> String {
 
         let mut total = BigUint::zero();
 
-        for allowed_digit in 0 .. 10 - leading_sum {
+        for allowed_digit in 0..10 - leading_sum {
             total += count_sum(digits_remaining - 1, left_one, allowed_digit, cache);
         }
 
@@ -38,7 +41,7 @@ pub fn p164() -> String {
     let full_digits = 20;
 
     let inclusive = count_sum(full_digits, 0, 0, &mut cache);
-    let less = count_sum(full_digits-1, 0, 0, &mut cache); // eliminates "leading zeroes" from 'inclusive'
+    let less = count_sum(full_digits - 1, 0, 0, &mut cache); // eliminates "leading zeroes" from 'inclusive'
 
     // known: with 3 digits, get 220, 165
     // known: with 2 digits, get  55,  45
@@ -48,14 +51,14 @@ pub fn p164() -> String {
 
 pub fn p165() -> String {
     use std::fmt;
-    use std::fmt::{Display};
+    use std::fmt::Display;
 
     type Rational = Ratio<i64>;
 
     #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
     struct RPoint {
         x: Rational,
-        y: Rational
+        y: Rational,
     }
 
     #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
@@ -63,12 +66,16 @@ pub fn p165() -> String {
         x1: Rational,
         y1: Rational,
         x2: Rational,
-        y2: Rational
+        y2: Rational,
     }
 
     impl Display for LineSegment {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "LineSegment: ({}, {}) to ({}, {})", self.x1, self.y1, self.x2, self.y2)
+            write!(
+                f,
+                "LineSegment: ({}, {}) to ({}, {})",
+                self.x1, self.y1, self.x2, self.y2
+            )
         }
     }
 
@@ -81,7 +88,7 @@ pub fn p165() -> String {
             mid == a
         }
     }
-    
+
     impl LineSegment {
         fn contains(&self, p: &RPoint) -> bool {
             between(&self.x1, &self.x2, &p.x) && between(&self.y1, &self.y2, &p.y)
@@ -91,7 +98,7 @@ pub fn p165() -> String {
             (self.y2 - self.y1) / (self.x2 - self.x1)
         }
     }
-    
+
     fn true_intersection(a: &LineSegment, b: &LineSegment) -> Option<RPoint> {
         if a.x1 == a.x2 {
             let x = a.x1;
@@ -108,7 +115,6 @@ pub fn p165() -> String {
             } else {
                 return None;
             }
-
         } else if b.x1 == b.x2 {
             return true_intersection(b, a);
         }
@@ -141,7 +147,7 @@ pub fn p165() -> String {
     }
 
     struct BBS {
-        s: u64
+        s: u64,
     }
 
     impl BBS {
@@ -170,11 +176,11 @@ pub fn p165() -> String {
     let mut found = HashSet::new();
     let mut count = 0;
 
-    for i in 0 .. 5000 {
+    for i in 0..5000 {
         let next = bbs.next_seg();
         // println!("Line {}: {:?}", i+1, next);
 
-        for j in 0 .. i {
+        for j in 0..i {
             let prev = lines[j];
             if let Some(p) = true_intersection(&prev, &next) {
                 found.insert(p);
@@ -186,16 +192,16 @@ pub fn p165() -> String {
     }
 
     println!("Raw: {}, deduped: {}", count, found.len());
-    
+
     found.len().to_string()
 }
 
-
-
 pub fn p169() -> String {
-
-    fn num_sum_powers(n: &BigUint, greatest_pow: &BigUint, cache: &mut HashMap<(BigUint, BigUint), BigUint>) -> BigUint {
-
+    fn num_sum_powers(
+        n: &BigUint,
+        greatest_pow: &BigUint,
+        cache: &mut HashMap<(BigUint, BigUint), BigUint>,
+    ) -> BigUint {
         let key = (n.clone(), greatest_pow.clone());
 
         if let Some(val) = cache.get(&key) {
@@ -214,7 +220,8 @@ pub fn p169() -> String {
             return BigUint::zero();
         }
 
-        let mut val = num_sum_powers(n, &r_shift, cache) + num_sum_powers(&(n - greatest_pow), &r_shift, cache);
+        let mut val = num_sum_powers(n, &r_shift, cache)
+            + num_sum_powers(&(n - greatest_pow), &r_shift, cache);
         if n >= &l_shift {
             val += num_sum_powers(&(n - l_shift), &r_shift, cache);
         }
@@ -227,11 +234,8 @@ pub fn p169() -> String {
     let two_pow = pow(BigUint::from(2_u32), 100);
     let mut cache = HashMap::new();
 
-    return num_sum_powers(&n, &two_pow, &mut cache)
-        .to_string();
+    return num_sum_powers(&n, &two_pow, &mut cache).to_string();
 }
-
-
 
 pub fn p173() -> String {
     // tbh i'm a bit disappointed this worked (1.5 ms with --release)
@@ -241,7 +245,7 @@ pub fn p173() -> String {
 
     let mut count = 0;
     let mut outer_width = 3;
-    
+
     loop {
         let mut hole_width = outer_width - 2;
         let start_area = outer_width * outer_width - hole_width * hole_width;
@@ -274,7 +278,7 @@ pub fn p174() -> String {
     let mut ways = HashMap::new();
 
     let mut outer_width = 3;
-    
+
     loop {
         let mut hole_width = outer_width - 2;
         let start_area = outer_width * outer_width - hole_width * hole_width;
@@ -305,38 +309,34 @@ pub fn p174() -> String {
             count += 1;
         }
     }
-    
+
     count.to_string()
 }
 
-
-
 pub fn p181() -> String {
-    use std;
-
     #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
     struct State {
         num_black: u8,
-        num_white: u8
+        num_white: u8,
     }
-    
+
     impl State {
         pub fn minned_with(&self, other: &State) -> State {
             // lexicographic ordering; black bigger than white
             if self.num_black > other.num_black {
                 State {
                     num_black: other.num_black,
-                    num_white: other.num_white
+                    num_white: other.num_white,
                 }
             } else if self.num_white > other.num_white {
                 State {
                     num_black: self.num_black,
-                    num_white: other.num_white
+                    num_white: other.num_white,
                 }
             } else {
                 State {
                     num_black: self.num_black,
-                    num_white: self.num_white
+                    num_white: self.num_white,
                 }
             }
         }
@@ -345,12 +345,12 @@ pub fn p181() -> String {
             if self.num_white > 0 {
                 State {
                     num_black: self.num_black,
-                    num_white: self.num_white - 1
+                    num_white: self.num_white - 1,
                 }
             } else if self.num_black > 0 {
                 State {
                     num_black: self.num_black - 1,
-                    num_white: std::u8::MAX
+                    num_white: std::u8::MAX,
                 }
             } else {
                 panic!();
@@ -360,7 +360,7 @@ pub fn p181() -> String {
         pub fn reduced_by(&self, other: &State) -> State {
             State {
                 num_black: self.num_black - other.num_black,
-                num_white: self.num_white - other.num_white
+                num_white: self.num_white - other.num_white,
             }
         }
 
@@ -397,7 +397,10 @@ pub fn p181() -> String {
     let num_black = 60;
     let num_white = 40;
 
-    let state = State { num_black, num_white };
+    let state = State {
+        num_black,
+        num_white,
+    };
     let mut cache = HashMap::new();
 
     num_perms(state, state, &mut cache).to_string()
@@ -421,7 +424,9 @@ pub fn p188() -> String {
 pub fn p191() -> String {
     #[derive(Copy, Clone, Hash, Eq, PartialEq)]
     enum Day {
-        O, A, L
+        O,
+        A,
+        L,
     }
 
     #[derive(Copy, Clone, Hash, Eq, PartialEq)]
@@ -429,7 +434,7 @@ pub fn p191() -> String {
         days_remaining: usize,
         late_so_far: usize,
         prev: Day,
-        prev_prev: Day
+        prev_prev: Day,
     }
 
     impl Status {
@@ -438,7 +443,7 @@ pub fn p191() -> String {
                 days_remaining: self.days_remaining - 1,
                 late_so_far: self.late_so_far + (if day == Day::L { 1 } else { 0 }),
                 prev: day,
-                prev_prev: self.prev
+                prev_prev: self.prev,
             }
         }
     }
