@@ -1,14 +1,14 @@
-extern crate num;
-use num::{pow, BigInt, BigUint, One, Zero};
-
-use super::iterators::ForeverRange;
-
-use itertools;
-use prelude::cannot_happen;
 use std::cmp::Ord;
 use std::fmt;
 use std::iter::Iterator;
 use std::ops::{BitAnd, Mul, Rem, ShrAssign};
+
+use itertools;
+use num::{pow, BigInt, BigUint, One, Zero};
+
+use super::iterators::ForeverRange;
+use crate::prelude::cannot_happen;
+
 pub enum PossiblePrimesState {
     Two,
     Three,

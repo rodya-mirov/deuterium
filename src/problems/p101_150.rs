@@ -748,6 +748,311 @@ pub fn p110() -> String {
     }
 }
 
+mod p111_helpers {
+    use num::pow::pow;
+    use rayon::prelude::*;
+
+    use euler_lib::numerics::IsPrime;
+
+    #[derive(Clone, Debug)]
+    struct Schema {
+        // true: use repeated digit; false: use anything else
+        flags: Vec<bool>,
+        // number of zeros; kept for caching
+        num_repeated: usize,
+        num_digits: usize,
+    }
+
+    impl Schema {
+        fn new(n: usize, num_digits: usize) -> Schema {
+            if n >= (1 << num_digits) {
+                panic!(
+                    "Cannot make a schema outside range 0 -- {}",
+                    1 << num_digits
+                );
+            }
+
+            let mut flags = Vec::with_capacity(num_digits);
+            let mut num_repeated = 0;
+
+            for i in 0..num_digits {
+                let is_repeated = (n & (1 << i)) == 0;
+                flags.push(is_repeated);
+                if is_repeated {
+                    num_repeated += 1;
+                }
+            }
+
+            Schema {
+                flags,
+                num_repeated,
+                num_digits,
+            }
+        }
+
+        fn fulfill_schema(&self, repeated_digit: usize, to_fill: &mut Vec<u64>) {
+            let free_digits = self.num_digits - self.num_repeated;
+
+            for replacement in 0..pow(10, free_digits) {
+                let mut out = 0;
+                let mut remaining_replacement = replacement;
+
+                let mut failed = false;
+
+                for digit in 0..self.num_digits {
+                    let next_digit = {
+                        if self.flags[digit] {
+                            repeated_digit
+                        } else {
+                            let out = remaining_replacement % 10;
+                            if out == repeated_digit {
+                                failed = true;
+                            }
+                            remaining_replacement /= 10;
+                            out
+                        }
+                    } as u64;
+
+                    out = out * 10 + next_digit;
+
+                    if digit == 0 && next_digit == 0 {
+                        failed = true;
+                    }
+                }
+
+                if !failed {
+                    to_fill.push(out);
+                }
+            }
+        }
+    }
+
+    fn primes_by_schemas(schemas: &[Schema], repeated_digit: usize) -> u64 {
+        let mut to_consider = Vec::new();
+
+        let mut total = 0;
+        for schema in schemas {
+            schema.fulfill_schema(repeated_digit, &mut to_consider);
+
+            for n in &to_consider {
+                if n.is_prime() {
+                    total += n;
+                }
+            }
+
+            to_consider.clear();
+        }
+
+        total
+    }
+
+    pub fn p111() -> String {
+        const NUM_DIGITS: usize = 10;
+
+        let mut schemas_by_m: Vec<Vec<Schema>> = Vec::with_capacity(NUM_DIGITS);
+
+        for _ in 0..=NUM_DIGITS {
+            schemas_by_m.push(Vec::new());
+        }
+
+        for schema in 0..(1 << NUM_DIGITS) {
+            let schema = Schema::new(schema, NUM_DIGITS);
+
+            schemas_by_m
+                .get_mut(schema.num_repeated)
+                .unwrap()
+                .push(schema);
+        }
+
+        let digits = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+        // Do we really _need_ this par_iter()? Obviously not. But it cuts runtime in half
+        // and that's pretty cool. (14ms -> 7ms but still)
+        let grand_total = digits.par_iter().map(|&d| {
+            let mut repeated_digits = NUM_DIGITS;
+
+            let mut total = primes_by_schemas(schemas_by_m.get(repeated_digits).unwrap(), d);
+            while total == 0 {
+                if repeated_digits == 0 {
+                    panic!("I think we just proved there are no primes with {} digits; that feels wrong", NUM_DIGITS);
+                }
+
+                repeated_digits -= 1;
+                total = primes_by_schemas(schemas_by_m.get(repeated_digits).unwrap(), d);
+            }
+
+            total
+        }).sum::<u64>();
+
+        format!("{}", grand_total)
+    }
+
+    pub fn _p111_old() -> String {
+        const NUM_DIGITS: usize = 4;
+
+        // Idea: iterate through schemas (which are just 0 and 1, for "is digit" and "can vary but is not the digit")
+        // For each schema, iterate through all fulfillments of the schema
+
+        type Schema = [bool; NUM_DIGITS];
+
+        fn length(schema: &Schema) -> usize {
+            (0..NUM_DIGITS).filter(|&n| !schema[n]).count()
+        }
+
+        fn fulfill_schema(schema: &Schema, repeated_digit: usize, to_fill: &mut Vec<u64>) {
+            if repeated_digit == 0 && !schema[0] {
+                return; // cannot be fulfilled
+            }
+
+            let free_digits = NUM_DIGITS - length(&schema);
+            let max = pow(10, free_digits);
+
+            for replacement in 0..max {
+                let mut out: u64 = 0;
+
+                let mut remaining_replacement = replacement;
+                let mut failed = false;
+
+                for digit in 0..NUM_DIGITS {
+                    let next_digit = {
+                        if schema[0] {
+                            let out = remaining_replacement % 10;
+                            remaining_replacement /= 10;
+                            if out == repeated_digit {
+                                failed = true;
+                            }
+                            out
+                        } else {
+                            repeated_digit
+                        }
+                    };
+
+                    if digit == 0 && next_digit == 0 {
+                        failed = true;
+                    }
+
+                    out = out * 10 + (next_digit as u64);
+                }
+
+                if !failed {
+                    println!(
+                        "For S({},{}) I considered {}",
+                        length(&schema),
+                        repeated_digit,
+                        out
+                    );
+                    to_fill.push(out);
+                }
+            }
+        }
+
+        fn downward(num_repetitions: usize, digit: usize) -> Vec<u64> {
+            let mut out = Vec::new(); // TODO: with_capacity?
+
+            for schema_num in 0..=(1 << NUM_DIGITS) {
+                let mut schema: Schema = [false; NUM_DIGITS];
+                for i in 0..NUM_DIGITS {
+                    schema[i] = (schema_num & (1 << i)) == 0;
+                }
+
+                if length(&schema) != num_repetitions {
+                    println!(
+                        "For length {} with n={}, rejected schema {:?}",
+                        NUM_DIGITS, num_repetitions, schema
+                    );
+                    continue;
+                }
+
+                println!(
+                    "For length {} with n={}, got schema {:?}",
+                    NUM_DIGITS, num_repetitions, schema
+                );
+
+                fulfill_schema(&schema, digit, &mut out);
+            }
+
+            out
+        }
+
+        let s = |num_repetitions: usize, digit: usize| {
+            downward(num_repetitions, digit)
+                .into_iter()
+                .filter(|num| num.is_prime())
+                .sum::<u64>()
+        };
+
+        let total = (0..=9)
+        .map(|d| {
+            let mut m = NUM_DIGITS;
+            let mut srd: u64 = s(m, d);
+            while srd == 0 {
+                if m <= 2 {
+                    panic!(
+                        "Seems like we proved there are no {} digit primes, that doesn't seem right",
+                        NUM_DIGITS
+                    );
+                }
+
+                m -= 1;
+                srd = s(m, d);
+            }
+            srd
+        })
+        .sum::<u64>();
+
+        format!("{}", total)
+    }
+
+    #[cfg(test)]
+    mod schema_tests {
+        use super::*;
+
+        #[test]
+        fn fulfill_schema_1() {
+            let schema = Schema::new(0 + 0 + 4 + 0, 4);
+
+            assert_eq!(4, schema.num_digits);
+            assert_eq!(3, schema.num_repeated);
+
+            let mut actual = Vec::new();
+            schema.fulfill_schema(3, &mut actual);
+            actual.sort();
+
+            let expected = vec![3303, 3313, 3323, 3343, 3353, 3363, 3373, 3383, 3393];
+
+            assert_eq!(expected, actual);
+        }
+
+        #[test]
+        fn fulfill_schema_2() {
+            let schema = Schema::new(1 + 0 + 0 + 0 + 16, 5);
+
+            assert_eq!(5, schema.num_digits);
+            assert_eq!(3, schema.num_repeated);
+
+            let mut actual = Vec::new();
+            schema.fulfill_schema(2, &mut actual);
+            actual.sort();
+
+            #[rustfmt::skip]
+            let expected = vec![
+                12220, 12221, 12223, 12224, 12225, 12226, 12227, 12228, 12229,
+                32220, 32221, 32223, 32224, 32225, 32226, 32227, 32228, 32229,
+                42220, 42221, 42223, 42224, 42225, 42226, 42227, 42228, 42229,
+                52220, 52221, 52223, 52224, 52225, 52226, 52227, 52228, 52229,
+                62220, 62221, 62223, 62224, 62225, 62226, 62227, 62228, 62229,
+                72220, 72221, 72223, 72224, 72225, 72226, 72227, 72228, 72229,
+                82220, 82221, 82223, 82224, 82225, 82226, 82227, 82228, 82229,
+                92220, 92221, 92223, 92224, 92225, 92226, 92227, 92228, 92229,
+            ];
+
+            assert_eq!(expected, actual);
+        }
+    }
+}
+
+pub use p111_helpers::p111;
+
 pub fn p112() -> String {
     fn not_bouncy(mut n: i64) -> bool {
         let mut direction = 0;
