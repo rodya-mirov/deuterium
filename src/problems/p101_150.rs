@@ -3,14 +3,16 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fs::File;
 use std::io::Read;
 
+use rayon::prelude::*;
+
 use num::bigint::{BigInt, BigUint};
 use num::integer::{gcd, lcm};
 use num::pow::pow;
 
+use im::ordset::OrdSet;
+
 use euler_lib::data::RectVec;
 use euler_lib::numerics::{mod_inv, powmod, IsPrime};
-
-use im::ordset::OrdSet;
 
 pub fn p102() -> String {
     // read the file somehow
@@ -2653,6 +2655,26 @@ pub fn p147() -> String {
     }
 
     total.to_string()
+}
+
+pub fn p148() -> String {
+    fn num_not_seven_row(mut row: u64) -> u64 {
+        let mut out = 1;
+        while row > 0 {
+            out *= (row % 7) + 1;
+            row /= 7;
+        }
+        out
+    }
+
+    let max_rows = pow(10_u64, 9);
+
+    let total = (0..max_rows)
+        .into_par_iter()
+        .map(|row| num_not_seven_row(row))
+        .sum::<u64>();
+
+    format!("{}", total)
 }
 
 pub fn p149() -> String {

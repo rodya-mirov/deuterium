@@ -93,7 +93,7 @@ fn do_problem(problem_num: i32) {
         145 => problems::p101_150::p145(),
         146 => problems::p101_150::p146(),
         147 => problems::p101_150::p147(),
-
+        148 => problems::p101_150::p148(),
         149 => problems::p101_150::p149(),
 
         164 => problems::p151_200::p164(),
