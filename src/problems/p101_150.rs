@@ -2237,6 +2237,81 @@ pub fn p140() -> String {
     total.to_string()
 }
 
+pub fn p142() -> String {
+    let mut best_sum: Option<usize> = None;
+
+    let mut test_square = {
+        let mut highest_n: usize = 0;
+        let mut highest_nsq: usize = 0;
+        let mut is_square = vec![true];
+        move |n: usize| {
+            while is_square.len() <= n {
+                while is_square.len() < highest_nsq {
+                    is_square.push(false);
+                }
+
+                is_square.push(true);
+                highest_n += 1;
+                highest_nsq = highest_n * highest_n;
+            }
+
+            is_square[n]
+        }
+    };
+
+    let mut good_pairs: Vec<Vec<usize>> = Vec::new(); // x -> {y| (x,y) is a good pair}
+    let mut x = 0;
+    loop {
+        good_pairs.push(Vec::new());
+
+        let mut n = 1;
+        let mut nsq = 1;
+
+        while nsq <= x {
+            n += 1;
+            nsq = n * n;
+        }
+
+        while nsq < x * 2 {
+            let y = nsq - x; // guarantee x+y is a perfect square
+
+            if let Some(s) = best_sum {
+                if x + y >= s {
+                    break;
+                }
+            }
+
+            if test_square(x + y) && test_square(x - y) {
+                //println!("Good pair: {},{}", x, y);
+                good_pairs[x].push(y);
+
+                for z in &good_pairs[y] {
+                    if test_square(x + z) && test_square(x - z) {
+                        //println!("Good triple: {},{},{}", x, y, y);
+                        let sum = x + y + z;
+                        best_sum = match best_sum {
+                            Some(s) => Some(std::cmp::min(sum, s)),
+                            None => Some(sum),
+                        };
+                    }
+                }
+            }
+
+            n += 1;
+            nsq = n * n;
+        }
+
+        if let Some(s) = best_sum {
+            if x >= s {
+                break;
+            }
+        }
+        x += 1;
+    }
+
+    format!("{}", best_sum.unwrap())
+}
+
 pub fn p145() -> String {
     fn reverse(mut n: u64) -> u64 {
         let mut out = 0;
